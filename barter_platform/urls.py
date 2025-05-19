@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views  # For login/logout
+from ads import views as ads_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,5 +16,6 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page="ads:ad_list"),
         name="logout",
     ),
+    path("accounts/signup/", ads_views.SignUpView.as_view(), name="signup"),
     path("", include("ads.urls")),  # Make ads app the root or redirect
 ]

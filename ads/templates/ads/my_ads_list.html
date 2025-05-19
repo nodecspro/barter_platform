@@ -1,42 +1,71 @@
-{% extends "base.html" %}
-{% block title %}Мои объявления{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Мои объявления{% endblock %} {% block
+content %}
 <h1>Мои объявления</h1>
 
 {% if page_obj.object_list %}
-    <div class="list-group">
-    {% for ad in page_obj.object_list %}
-        <div class="list-group-item list-group-item-action flex-column align-items-start {% if not ad.is_active %}list-group-item-light text-muted{% endif %}">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1"><a href="{{ ad.get_absolute_url }}">{{ ad.title }}</a> {% if not ad.is_active %}(Неактивно){% endif %}</h5>
-                <small>{{ ad.created_at|date:"d.m.Y" }}</small>
-            </div>
-            <p class="mb-1">{{ ad.description|truncatewords:30 }}</p>
-            <small>Категория: {{ ad.get_category_display }}, Состояние: {{ ad.get_condition_display }}</small>
-            <div class="mt-2">
-                <a href="{{ ad.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Просмотр</a>
-                <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-sm btn-outline-warning">Редактировать</a>
-                <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
-            </div>
-        </div>
-    {% endfor %}
+<div class="list-group">
+  {% for ad in page_obj.object_list %}
+  <div
+    class="list-group-item list-group-item-action flex-column align-items-start {% if not ad.is_active %}list-group-item-light text-muted{% endif %}"
+  >
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">
+        <a href="{{ ad.get_absolute_url }}">{{ ad.title }}</a> {% if not
+        ad.is_active %}(Неактивно){% endif %}
+      </h5>
+      <small>{{ ad.created_at|date:"d.m.Y" }}</small>
     </div>
+    <p class="mb-1">{{ ad.description|truncatewords:30 }}</p>
+    <small
+      >Категория: {{ ad.get_category_display }}, Состояние: {{
+      ad.get_condition_display }}</small
+    >
+    <div class="mt-2">
+      <a href="{{ ad.get_absolute_url }}" class="btn btn-sm btn-outline-primary"
+        >Просмотр</a
+      >
+      <a
+        href="{% url 'ads:ad_edit' ad.pk %}"
+        class="btn btn-sm btn-outline-warning"
+        >Редактировать</a
+      >
+      <a
+        href="{% url 'ads:ad_delete' ad.pk %}"
+        class="btn btn-sm btn-outline-danger"
+        >Удалить</a
+      >
+    </div>
+  </div>
+  {% endfor %}
+</div>
 
-    {% if page_obj.has_other_pages %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
-            {% endif %}
-            <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
-            {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперед</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
+        >Назад</a
+      >
+    </li>
     {% endif %}
-{% else %}
-    <p>У вас пока нет объявлений. <a href="{% url 'ads:ad_create' %}">Создать новое?</a></p>
-{% endif %}
-{% endblock %}
+    <li class="page-item disabled">
+      <span class="page-link"
+        >Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span
+      >
+    </li>
+    {% if page_obj.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ page_obj.next_page_number }}"
+        >Вперед</a
+      >
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %} {% else %}
+<p>
+  У вас пока нет объявлений.
+  <a href="{% url 'ads:ad_create' %}">Создать новое?</a>
+</p>
+{% endif %} {% endblock %}
