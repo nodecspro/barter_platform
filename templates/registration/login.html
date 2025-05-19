@@ -1,9 +1,4 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Вход - Бартер Онлайн{% endblock %}
-
-{% block extra_head %}
+{% extends "base.html" %} {% load static %} {% block title %}Вход - Бартер Онлайн{% endblock %} {% block extra_head %}
 <style>
     /* Стили для .login-container, form-floating и т.д. должны быть идентичны тем, что в signup.html или в base.html, если они глобальные */
     .login-container {
@@ -40,7 +35,8 @@
         color: var(--form-floating-label-color); /* Используем CSS переменную */
     }
     .form-floating > .form-control:focus ~ label,
-    .form-floating > .form-control:not(:placeholder-shown) ~ label { /* :not(:placeholder-shown) */
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        /* :not(:placeholder-shown) */
         opacity: 0.65;
         transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
     }
@@ -49,55 +45,47 @@
         font-size: 0.875em;
     }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="container login-container">
     <h2>Вход в аккаунт</h2>
 
     {% if form.non_field_errors %} {# Ошибки, не связанные с конкретным полем #}
-        <div class="alert alert-danger mt-3" role="alert">
-            {% for error in form.non_field_errors %}
-                <p class="mb-0">{{ error }}</p>
-            {% endfor %}
-        </div>
+    <div class="alert alert-danger mt-3" role="alert">
+        {% for error in form.non_field_errors %}
+        <p class="mb-0">{{ error }}</p>
+        {% endfor %}
+    </div>
     {% endif %}
 
     <form method="post" action="{% url 'login' %}" class="mt-3" id="loginForm" novalidate>
-        {% csrf_token %}
-        
-        {# Имя пользователя #}
+        {% csrf_token %} {# Имя пользователя #}
         <div class="form-floating mb-3 field-container">
-            {{ form.username }} {# Рендерит <input id="id_username" name="username" ... > #}
+            {{ form.username }} {# Рендерит <input id="id_username" name="username" ... /> #}
             <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
             {% if form.username.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.username.errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
+            <div class="invalid-feedback d-block">
+                {% for error in form.username.errors %} {{ error }} {% endfor %}
+            </div>
             {% endif %}
-             <div class="custom-error-message" id="{{ form.username.id_for_label }}-js-error"></div>
+            <div class="custom-error-message" id="{{ form.username.id_for_label }}-js-error"></div>
         </div>
-        
+
         {# Пароль #}
         <div class="form-floating mb-3 field-container">
-            {{ form.password }} {# Рендерит <input id="id_password" name="password" type="password" ... > #}
+            {{ form.password }} {# Рендерит <input id="id_password" name="password" type="password" ... /> #}
             <label for="{{ form.password.id_for_label }}">Пароль</label>
             {% if form.password.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.password.errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
+            <div class="invalid-feedback d-block">
+                {% for error in form.password.errors %} {{ error }} {% endfor %}
+            </div>
             {% endif %}
             <div class="custom-error-message" id="{{ form.password.id_for_label }}-js-error"></div>
         </div>
 
         {% if request.GET.next %}
-            <input type="hidden" name="next" value="{{ request.GET.next }}">
+        <input type="hidden" name="next" value="{{ request.GET.next }}" />
         {% endif %}
-        
+
         <div class="d-grid mt-4">
             <button type="submit" class="btn btn-primary btn-lg">Войти</button>
         </div>
@@ -108,89 +96,87 @@
         <p>Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a></p>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('loginForm'); // Убедитесь, что ID формы правильный
-    if (!form) return;
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("loginForm"); // Убедитесь, что ID формы правильный
+        if (!form) return;
 
-    const formElements = form.querySelectorAll('.form-floating > input:not([type="hidden"]), .form-floating > select, .form-floating > textarea');
-    
-    formElements.forEach(function(el) {
-        // Базовая настройка (form-control, placeholder)
-        if (!el.classList.contains('form-control') && el.tagName.toLowerCase() !== 'select') {
-            el.classList.add('form-control');
-        }
-        if (el.tagName.toLowerCase() === 'select' && !el.classList.contains('form-select')) {
-            el.classList.add('form-select');
-        }
+        const formElements = form.querySelectorAll('.form-floating > input:not([type="hidden"]), .form-floating > select, .form-floating > textarea');
 
-        // КЛЮЧЕВОЙ МОМЕНТ:
-        // Для form-floating, если у поля УЖЕ ЕСТЬ ЗНАЧЕНИЕ, placeholder не нужен для "всплытия" метки.
-        // :not(:placeholder-shown) сработает.
-        // Если значения НЕТ, то нужен placeholder=" " для корректного начального состояния.
-        if (el.value === '' && !el.hasAttribute('placeholder') && (el.type === 'text' || el.type === 'email' || el.type === 'password' || el.tagName.toLowerCase() === 'textarea')) {
-            el.setAttribute('placeholder', ' ');
-        }
-
-        const fieldContainer = el.closest('.field-container');
-        if (!fieldContainer) return;
-
-        const djangoErrorDiv = fieldContainer.querySelector('.invalid-feedback.d-block'); // Ищем только ошибки Django
-        const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
-
-        // Обработчики для "живой" валидации и скрытия ошибок (аналогично signup.html)
-        el.addEventListener('input', function() {
-            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null && djangoErrorDiv.textContent.toLowerCase().includes('this field is required')) {
-                djangoErrorDiv.style.display = 'none';
+        formElements.forEach(function (el) {
+            // Базовая настройка (form-control, placeholder)
+            if (!el.classList.contains("form-control") && el.tagName.toLowerCase() !== "select") {
+                el.classList.add("form-control");
             }
-            if (jsErrorDiv && jsErrorDiv.offsetParent !== null && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
-                hideJsError(jsErrorDiv);
+            if (el.tagName.toLowerCase() === "select" && !el.classList.contains("form-select")) {
+                el.classList.add("form-select");
             }
-            // Здесь можно добавить специфичную для логина JS-валидацию, если нужно (обычно не требуется)
-            // validateLoginField(el, fieldContainer);
-            // Если поле стало валидным по JS и нет других ошибок, убираем is-invalid
-            if (el.value.trim() !== '' && (!djangoErrorDiv || djangoErrorDiv.offsetParent === null)) {
-                 const currentJsError = jsErrorDiv ? jsErrorDiv.textContent : '';
-                 if(currentJsError === '' || !jsErrorDiv.offsetParent){ // Если нет активных JS ошибок
-                    el.classList.remove('is-invalid');
-                 }
-            }
-        });
 
-        el.addEventListener('blur', function() {
-            const isRequired = el.hasAttribute('required') || el.required;
-            if (el.value.trim() === '' && isRequired) {
-                showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
-                el.classList.add('is-invalid');
-                if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
-            } else {
-                if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+            // КЛЮЧЕВОЙ МОМЕНТ:
+            // Для form-floating, если у поля УЖЕ ЕСТЬ ЗНАЧЕНИЕ, placeholder не нужен для "всплытия" метки.
+            // :not(:placeholder-shown) сработает.
+            // Если значения НЕТ, то нужен placeholder=" " для корректного начального состояния.
+            if (el.value === "" && !el.hasAttribute("placeholder") && (el.type === "text" || el.type === "email" || el.type === "password" || el.tagName.toLowerCase() === "textarea")) {
+                el.setAttribute("placeholder", " ");
+            }
+
+            const fieldContainer = el.closest(".field-container");
+            if (!fieldContainer) return;
+
+            const djangoErrorDiv = fieldContainer.querySelector(".invalid-feedback.d-block"); // Ищем только ошибки Django
+            const jsErrorDiv = fieldContainer.querySelector(".custom-error-message");
+
+            // Обработчики для "живой" валидации и скрытия ошибок (аналогично signup.html)
+            el.addEventListener("input", function () {
+                if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null && djangoErrorDiv.textContent.toLowerCase().includes("this field is required")) {
+                    djangoErrorDiv.style.display = "none";
+                }
+                if (jsErrorDiv && jsErrorDiv.offsetParent !== null && jsErrorDiv.textContent.includes("Это поле обязательно для заполнения")) {
                     hideJsError(jsErrorDiv);
                 }
+                // Здесь можно добавить специфичную для логина JS-валидацию, если нужно (обычно не требуется)
+                // validateLoginField(el, fieldContainer);
+                // Если поле стало валидным по JS и нет других ошибок, убираем is-invalid
+                if (el.value.trim() !== "" && (!djangoErrorDiv || djangoErrorDiv.offsetParent === null)) {
+                    const currentJsError = jsErrorDiv ? jsErrorDiv.textContent : "";
+                    if (currentJsError === "" || !jsErrorDiv.offsetParent) {
+                        // Если нет активных JS ошибок
+                        el.classList.remove("is-invalid");
+                    }
+                }
+            });
+
+            el.addEventListener("blur", function () {
+                const isRequired = el.hasAttribute("required") || el.required;
+                if (el.value.trim() === "" && isRequired) {
+                    showJsError(jsErrorDiv, "Это поле обязательно для заполнения.");
+                    el.classList.add("is-invalid");
+                    if (djangoErrorDiv) djangoErrorDiv.style.display = "none";
+                } else {
+                    if (jsErrorDiv && jsErrorDiv.textContent.includes("Это поле обязательно для заполнения")) {
+                        hideJsError(jsErrorDiv);
+                    }
+                }
+            });
+
+            // Начальная настройка is-invalid на основе ошибок Django
+            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) {
+                el.classList.add("is-invalid");
             }
         });
 
-        // Начальная настройка is-invalid на основе ошибок Django
-        if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) {
-            el.classList.add('is-invalid');
+        function showJsError(errorDiv, message) {
+            if (!errorDiv) return;
+            errorDiv.textContent = message;
+            errorDiv.style.display = "block";
+        }
+
+        function hideJsError(errorDiv) {
+            if (!errorDiv) return;
+            errorDiv.textContent = "";
+            errorDiv.style.display = "none";
         }
     });
-
-    function showJsError(errorDiv, message) {
-        if (!errorDiv) return;
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-    }
-
-    function hideJsError(errorDiv) {
-        if (!errorDiv) return;
-        errorDiv.textContent = '';
-        errorDiv.style.display = 'none';
-    }
-
-});
 </script>
 {% endblock %}

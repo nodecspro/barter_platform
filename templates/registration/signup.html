@@ -1,117 +1,182 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Регистрация - Бартер Онлайн{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% extends "base.html" %} {% load static %} {% block title %}Регистрация - Бартер Онлайн{% endblock %} {% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 <style>
     .signup-container {
-    max-width: 550px; margin-top: 2rem; margin-bottom: 3rem; padding: 2rem;
-    background-color: var(--container-box-bg); border-radius: 0.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin-top: 2rem;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background-color: var(--container-box-bg);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
     }
-    .signup-container h2 { margin-bottom: 1.5rem; text-align: center; }
+    .signup-container h2 {
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
     /* Стили для form-floating */
-    .form-floating { position: relative; } /* Нужно для кнопки глаза */
+    .form-floating {
+        position: relative;
+    } /* Нужно для кнопки глаза */
     .form-floating > .form-control,
     .form-floating > .form-select {
-    height: calc(3.5rem + 2px); line-height: 1.25;
-    padding-top: 1.625rem; padding-bottom: 0.625rem;
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
     }
     .form-floating > label {
-    position: absolute; top: 0; left: 0; height: 100%; padding: 1rem 0.75rem;
-    pointer-events: none; border: 1px solid transparent; transform-origin: 0 0;
-    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-    color: var(--form-floating-label-color);
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: var(--form-floating-label-color);
     }
     .form-floating > .form-control:focus ~ label,
     .form-floating > .form-control:not(:placeholder-shown) ~ label,
     .form-floating > .form-select ~ label {
-    opacity: 0.65; transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
     }
     .form-control:focus {
-    border-color: #86b7fe; outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
     /* Стили для Bootstrap is-valid / is-invalid с иконками */
-    .form-control.is-valid, .was-validated .form-control:valid {
+    .form-control.is-valid,
+    .was-validated .form-control:valid {
         border-color: #198754 !important;
-        padding-right: calc(1.5em + .75rem) !important; /* Стандартный padding */
+        padding-right: calc(1.5em + 0.75rem) !important; /* Стандартный padding */
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4M3.7 6.73L1.3 4.53c-.4-1.04.46-1.4M7.4 1.23L4.1 5.83c-.4 1.04.46 1.4'%3e%3c/path%3e%3c/svg%3e") !important;
         background-repeat: no-repeat !important;
-        background-position: right calc(.375em + .1875rem) center !important; /* Стандартная позиция */
-        background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
+        background-position: right calc(0.375em + 0.1875rem) center !important; /* Стандартная позиция */
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
     }
-    .form-control.is-valid:focus { box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25) !important; }
-    .form-control.is-invalid, .was-validated .form-control:invalid {
+    .form-control.is-valid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+    }
+    .form-control.is-invalid,
+    .was-validated .form-control:invalid {
         border-color: #dc3545 !important;
-        padding-right: calc(1.5em + .75rem) !important; /* Стандартный padding */
+        padding-right: calc(1.5em + 0.75rem) !important; /* Стандартный padding */
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
         background-repeat: no-repeat !important;
-        background-position: right calc(.375em + .1875rem) center !important; /* Стандартная позиция */
-        background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
+        background-position: right calc(0.375em + 0.1875rem) center !important; /* Стандартная позиция */
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
     }
-    .form-control.is-invalid:focus { box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25) !important; }
+    .form-control.is-invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+    }
     .password-toggle-btn {
-        position: absolute; top: 50%; right: 0.75rem; transform: translateY(-50%);
-        padding: 0.375rem 0.5rem; line-height: 1; background: none; border: none;
-        color: var(--text-muted-color); cursor: pointer; z-index: 3; /* z-index чтобы кнопка была над полем, но под иконкой валидации, если она очень близко */
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        transform: translateY(-50%);
+        padding: 0.375rem 0.5rem;
+        line-height: 1;
+        background: none;
+        border: none;
+        color: var(--text-muted-color);
+        cursor: pointer;
+        z-index: 3; /* z-index чтобы кнопка была над полем, но под иконкой валидации, если она очень близко */
     }
-    .password-toggle-btn:focus { outline: none; box-shadow: none; }
-
+    .password-toggle-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
     .form-control.has-password-toggle.is-valid,
     .form-control.has-password-toggle.is-invalid {
-        padding-right: calc(1.5em + .75rem + 2.2rem) !important; /* Добавляем место для кнопки глаза (2.2rem = ~35px) */
-        background-position: right calc(.375em + .1875rem + 2rem) center !important; /* Сдвигаем иконку BS левее кнопки глаза */
+        padding-right: calc(1.5em + 0.75rem + 2.2rem) !important; /* Добавляем место для кнопки глаза (2.2rem = ~35px) */
+        background-position: right calc(0.375em + 0.1875rem + 2rem) center !important; /* Сдвигаем иконку BS левее кнопки глаза */
     }
-
     /* Стили для динамических подсказок */
     .field-validation-feedback {
-    font-size: 0.875em; padding-left: 0.5rem; 
-    opacity: 0; max-height: 0; overflow: hidden; visibility: hidden;
-    transition: opacity 0.2s ease-out, max-height 0.2s ease-out, visibility 0s linear 0.2s, margin-top 0.2s ease-out, margin-bottom 0.2s ease-out;
+        font-size: 0.875em;
+        padding-left: 0.5rem;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        transition: opacity 0.2s ease-out, max-height 0.2s ease-out, visibility 0s linear 0.2s, margin-top 0.2s ease-out, margin-bottom 0.2s ease-out;
     }
     .field-validation-feedback.visible {
-    opacity: 1; max-height: 200px; visibility: visible;
-    margin-top: 0.25rem; margin-bottom: 0.5rem; 
+        opacity: 1;
+        max-height: 200px;
+        visibility: visible;
+        margin-top: 0.25rem;
+        margin-bottom: 0.5rem;
     }
-    .field-validation-feedback ul { list-style: none; padding: 0; margin: 0; }
+    .field-validation-feedback ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
     .field-validation-feedback li {
-    margin-bottom: 0.3rem; color: var(--text-muted-color);
-    position: relative; padding-left: 1.5em;
-    line-height: 1.4; transition: color 0.2s ease-out;
+        margin-bottom: 0.3rem;
+        color: var(--text-muted-color);
+        position: relative;
+        padding-left: 1.5em;
+        line-height: 1.4;
+        transition: color 0.2s ease-out;
     }
     .field-validation-feedback li::before {
-    font-family: "bootstrap-icons"; position: absolute; left: 0; 
-    font-weight: normal; font-size: 0.9em; top: 0.1em;
+        font-family: "bootstrap-icons";
+        position: absolute;
+        left: 0;
+        font-weight: normal;
+        font-size: 0.9em;
+        top: 0.1em;
     }
-    .field-validation-feedback li.valid { color: #198754; }
-    .field-validation-feedback li.valid::before { content: "\F28A"; color: #198754; } /* check-circle-fill */
-    .field-validation-feedback li.invalid { color: #dc3545; }
-    .field-validation-feedback li.invalid::before { content: "\F635"; color: #dc3545; } /* x-circle-fill */
-    .custom-error-message { color: #dc3545; font-size: 0.875em; margin-top: 0.25rem; display: none; }
-    .invalid-feedback.d-block ul { list-style: none; padding: 0; margin: 0; }
+    .field-validation-feedback li.valid {
+        color: #198754;
+    }
+    .field-validation-feedback li.valid::before {
+        content: "\F28A";
+        color: #198754;
+    } /* check-circle-fill */
+    .field-validation-feedback li.invalid {
+        color: #dc3545;
+    }
+    .field-validation-feedback li.invalid::before {
+        content: "\F635";
+        color: #dc3545;
+    } /* x-circle-fill */
+    .custom-error-message {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+        display: none;
+    }
+    .invalid-feedback.d-block ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
 </style>
-{% endblock %}
-{% block content %}
+{% endblock %} {% block content %}
 <div class="container signup-container">
     <h2>Регистрация нового пользователя</h2>
     {% if form.non_field_errors %}
     <div class="alert alert-danger mt-3" role="alert">
-        {% for error in form.non_field_errors %} 
+        {% for error in form.non_field_errors %}
         <p class="mb-0">{{ error }}</p>
         {% endfor %}
     </div>
     {% endif %}
     <form method="post" class="mt-3" id="signupForm" novalidate>
-        {% csrf_token %}
-        {% for field in form %}
+        {% csrf_token %} {% for field in form %}
         <div class="mb-3 field-wrapper">
             {# Отступ между группами поле+подсказки #}
             <div class="form-floating field-container" data-field-name="{{ field.name }}">
                 {{ field }}
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {# Кнопка видимости пароля будет добавлена JS #}
-                {% if field.errors %}
+                {# Кнопка видимости пароля будет добавлена JS #} {% if field.errors %}
                 <div class="invalid-feedback d-block django-error">
                     {% for error in field.errors %} {{ error }} {% endfor %}
                 </div>
@@ -126,16 +191,14 @@
                     <li id="un-chars">Только буквы, цифры и @/./+/-/_.</li>
                 </ul>
             </div>
-            {% endif %}
-            {% if field.name == 'email' %}
+            {% endif %} {% if field.name == 'email' %}
             <div id="email-feedback" class="field-validation-feedback">
                 <p class="mb-1 small text-muted">Email:</p>
                 <ul>
                     <li id="em-format">Корректный формат (user@example.com).</li>
                 </ul>
             </div>
-            {% endif %}
-            {% if field.name == 'password' %} {# Django UserCreationForm обычно использует 'password' для первого поля #}
+            {% endif %} {% if field.name == 'password' %} {# Django UserCreationForm обычно использует 'password' для первого поля #}
             <div id="password-rules-container" class="field-validation-feedback">
                 <p class="mb-1 small text-muted">Пароль должен:</p>
                 <ul>
@@ -155,32 +218,33 @@
         <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
     </div>
 </div>
-{% endblock %}
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('signupForm');
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("signupForm");
         if (!form) return;
-    
-        const passwordField = form.querySelector('#id_password1');
-    
+
+        const passwordField = form.querySelector("#id_password1");
+
         // --- Добавление кнопок видимости пароля ---
-        [passwordField].forEach(field => {
+        [passwordField].forEach((field) => {
             if (field) {
-                field.classList.add('has-password-toggle');
-                const wrapper = field.closest('.form-floating');
+                field.classList.add("has-password-toggle");
+                const wrapper = field.closest(".form-floating");
                 if (wrapper) {
-                    const toggleBtn = document.createElement('button');
-                    toggleBtn.setAttribute('type', 'button');
-                    toggleBtn.classList.add('password-toggle-btn');
-                    toggleBtn.setAttribute('tabindex', '-1');
+                    const toggleBtn = document.createElement("button");
+                    toggleBtn.setAttribute("type", "button");
+                    toggleBtn.classList.add("password-toggle-btn");
+                    toggleBtn.setAttribute("tabindex", "-1");
                     toggleBtn.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
                     wrapper.appendChild(toggleBtn);
-                    toggleBtn.addEventListener('click', function() {
-                        if (field.type === 'password') {
-                            field.type = 'text'; this.innerHTML = '<i class="bi bi-eye-fill"></i>';
+                    toggleBtn.addEventListener("click", function () {
+                        if (field.type === "password") {
+                            field.type = "text";
+                            this.innerHTML = '<i class="bi bi-eye-fill"></i>';
                         } else {
-                            field.type = 'password'; this.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+                            field.type = "password";
+                            this.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
                         }
                         field.focus();
                     });
@@ -188,179 +252,195 @@
             }
         });
         // --- Конец блока кнопок видимости пароля ---
-    
+
         const formElements = Array.from(form.querySelectorAll('.form-floating > input:not([type="hidden"]), .form-floating > select, .form-floating > textarea'));
-        
+
         const validationFeedbacks = {
             username: {
-                container: document.getElementById('username-feedback'),
-                rules: { length: document.getElementById('un-length'), chars: document.getElementById('un-chars') },
+                container: document.getElementById("username-feedback"),
+                rules: { length: document.getElementById("un-length"), chars: document.getElementById("un-chars") },
                 validate: (value, el) => {
                     let lenValid = value.length >= 3 && value.length <= 150;
                     let charsValid = /^[a-zA-Z0-9@.+_-]*$/.test(value); // * позволяет пустое для начальной валидации
-                    updateRule(validationFeedbacks.username.rules.length, lenValid, value !== '' || el.classList.contains('is-invalid'));
-                    updateRule(validationFeedbacks.username.rules.chars, charsValid, value !== '' || el.classList.contains('is-invalid'));
-                    return (value === '' && !el.required) || (lenValid && charsValid);
-                }
+                    updateRule(validationFeedbacks.username.rules.length, lenValid, value !== "" || el.classList.contains("is-invalid"));
+                    updateRule(validationFeedbacks.username.rules.chars, charsValid, value !== "" || el.classList.contains("is-invalid"));
+                    return (value === "" && !el.required) || (lenValid && charsValid);
+                },
             },
             email: {
-                container: document.getElementById('email-feedback'),
-                rules: { format: document.getElementById('em-format') },
+                container: document.getElementById("email-feedback"),
+                rules: { format: document.getElementById("em-format") },
                 validate: (value, el) => {
-                    let formatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value === '';
-                    updateRule(validationFeedbacks.email.rules.format, formatValid, value !== '' || el.classList.contains('is-invalid'));
-                    return (value === '' && !el.required) || formatValid;
-                }
+                    let formatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value === "";
+                    updateRule(validationFeedbacks.email.rules.format, formatValid, value !== "" || el.classList.contains("is-invalid"));
+                    return (value === "" && !el.required) || formatValid;
+                },
             },
             password: {
-                container: document.getElementById('password-rules-container'),
-                rules: { length: document.getElementById('pr-length'), letter: document.getElementById('pr-letter'), number: document.getElementById('pr-number') },
+                container: document.getElementById("password-rules-container"),
+                rules: { length: document.getElementById("pr-length"), letter: document.getElementById("pr-letter"), number: document.getElementById("pr-number") },
                 validate: (value, el) => {
                     let lenValid = value.length >= 8;
                     let letterValid = /[a-zA-Zа-яА-Я]/.test(value);
                     let numValid = /\d/.test(value);
-                    updateRule(validationFeedbacks.password.rules.length, lenValid, value !== '' || el.classList.contains('is-invalid'));
-                    updateRule(validationFeedbacks.password.rules.letter, letterValid, value !== '' || el.classList.contains('is-invalid'));
-                    updateRule(validationFeedbacks.password.rules.number, numValid, value !== '' || el.classList.contains('is-invalid'));
-                    return (value === '' && !el.required) || (lenValid && letterValid && numValid);
-                }
-            }
+                    updateRule(validationFeedbacks.password.rules.length, lenValid, value !== "" || el.classList.contains("is-invalid"));
+                    updateRule(validationFeedbacks.password.rules.letter, letterValid, value !== "" || el.classList.contains("is-invalid"));
+                    updateRule(validationFeedbacks.password.rules.number, numValid, value !== "" || el.classList.contains("is-invalid"));
+                    return (value === "" && !el.required) || (lenValid && letterValid && numValid);
+                },
+            },
         };
-    
+
         function updateRule(ruleElement, isValid, hasInteractedOrIsInvalid) {
             if (!ruleElement) return;
-            ruleElement.classList.toggle('valid', isValid && hasInteractedOrIsInvalid);
-            ruleElement.classList.toggle('invalid', !isValid && hasInteractedOrIsInvalid);
-            if (!hasInteractedOrIsInvalid) { // Сбрасываем, если нет взаимодействия и не было ошибки
-                ruleElement.classList.remove('valid', 'invalid');
+            ruleElement.classList.toggle("valid", isValid && hasInteractedOrIsInvalid);
+            ruleElement.classList.toggle("invalid", !isValid && hasInteractedOrIsInvalid);
+            if (!hasInteractedOrIsInvalid) {
+                // Сбрасываем, если нет взаимодействия и не было ошибки
+                ruleElement.classList.remove("valid", "invalid");
             }
         }
-    
+
         function toggleFeedbackVisibility(feedbackContainer, show) {
             if (!feedbackContainer) return;
-            feedbackContainer.classList.toggle('visible', show);
+            feedbackContainer.classList.toggle("visible", show);
         }
-    
-        formElements.forEach(function(el) {
+
+        formElements.forEach(function (el) {
             // Базовая настройка
-            if (!el.classList.contains('form-control') && el.tagName.toLowerCase() !== 'select') { el.classList.add('form-control'); }
-            if (el.tagName.toLowerCase() === 'select' && !el.classList.contains('form-select')) { el.classList.add('form-select'); }
-            if (el.value === '' && !el.hasAttribute('placeholder') && (['text', 'email', 'password'].includes(el.type) || el.tagName.toLowerCase() === 'textarea')) {
-                el.setAttribute('placeholder', ' ');
+            if (!el.classList.contains("form-control") && el.tagName.toLowerCase() !== "select") {
+                el.classList.add("form-control");
             }
-    
-            const fieldContainer = el.closest('.field-container');
+            if (el.tagName.toLowerCase() === "select" && !el.classList.contains("form-select")) {
+                el.classList.add("form-select");
+            }
+            if (el.value === "" && !el.hasAttribute("placeholder") && (["text", "email", "password"].includes(el.type) || el.tagName.toLowerCase() === "textarea")) {
+                el.setAttribute("placeholder", " ");
+            }
+
+            const fieldContainer = el.closest(".field-container");
             if (!fieldContainer) return;
             const fieldName = fieldContainer.dataset.fieldName;
             const currentFeedbackConfig = validationFeedbacks[fieldName];
-            const djangoErrorDiv = fieldContainer.querySelector('.django-error');
-            const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
-    
-            el.addEventListener('focus', function() {
+            const djangoErrorDiv = fieldContainer.querySelector(".django-error");
+            const jsErrorDiv = fieldContainer.querySelector(".custom-error-message");
+
+            el.addEventListener("focus", function () {
                 if (currentFeedbackConfig && currentFeedbackConfig.container) {
                     toggleFeedbackVisibility(currentFeedbackConfig.container, true);
                     currentFeedbackConfig.validate(el.value, el);
                 }
             });
-            
-            el.addEventListener('input', function() {
-                if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) djangoErrorDiv.style.display = 'none';
+
+            el.addEventListener("input", function () {
+                if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) djangoErrorDiv.style.display = "none";
                 if (jsErrorDiv && jsErrorDiv.offsetParent !== null) hideJsError(jsErrorDiv);
-                
+
                 if (currentFeedbackConfig) currentFeedbackConfig.validate(el.value, el);
-                
+
                 updateFieldOverallValidity(el, currentFeedbackConfig);
             });
-            
-        el.addEventListener('blur', function() {
-            const fieldContainer = el.closest('.field-container');
-            if (!fieldContainer) return;
-            const fieldName = fieldContainer.dataset.fieldName;
-            const currentFeedbackConfig = validationFeedbacks[fieldName];
-            const djangoErrorDiv = fieldContainer.querySelector('.django-error');
-            const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
-            const isRequired = el.hasAttribute('required') || el.required;
 
-            if (el.value.trim() === '' && isRequired) {
-                showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
-                el.classList.add('is-invalid'); el.classList.remove('is-valid');
-                if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
-                if (currentFeedbackConfig && currentFeedbackConfig.container) {
-                     toggleFeedbackVisibility(currentFeedbackConfig.container, true); // Показываем, чтобы видеть invalid у правил
-                     if (currentFeedbackConfig.rules) {
-                        Object.values(currentFeedbackConfig.rules).forEach(ruleEl => updateRule(ruleEl, false, true));
-                     }
-                }
-            } else {
-                if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
-                    hideJsError(jsErrorDiv);
-                }
-                
-                let allRulesForFieldValid = true; // Флаг, что все JS правила для этого поля выполнены
-                if (currentFeedbackConfig) {
-                    allRulesForFieldValid = currentFeedbackConfig.validate(el.value.trim(), el); // Перепроверяем все правила
+            el.addEventListener("blur", function () {
+                const fieldContainer = el.closest(".field-container");
+                if (!fieldContainer) return;
+                const fieldName = fieldContainer.dataset.fieldName;
+                const currentFeedbackConfig = validationFeedbacks[fieldName];
+                const djangoErrorDiv = fieldContainer.querySelector(".django-error");
+                const jsErrorDiv = fieldContainer.querySelector(".custom-error-message");
+                const isRequired = el.hasAttribute("required") || el.required;
 
-                    if (currentFeedbackConfig.container) {
-                        if (el.value.trim() === '' && !isRequired) {
-                            // Если поле не обязательное и пустое, скрываем фидбек
-                            toggleFeedbackVisibility(currentFeedbackConfig.container, false);
-                        } else if (allRulesForFieldValid && el.value.trim() !== '') {
-                            // Если все правила выполнены и поле не пустое, скрываем фидбек
-                            // Можно добавить задержку, чтобы пользователь успел увидеть галочки
-                            setTimeout(() => {
-                                // Проверяем еще раз, не появилось ли ошибок от Django или JS за это время
-                                const stillDjangoError = djangoErrorDiv && djangoErrorDiv.offsetParent !== null;
-                                const stillJsError = jsErrorDiv && jsErrorDiv.offsetParent !== null;
-                                if (!stillDjangoError && !stillJsError) {
-                                     toggleFeedbackVisibility(currentFeedbackConfig.container, false);
-                                }
-                            }, 200); // Задержка в 1 секунду, можно настроить
-                        } else {
-                            // Если есть ошибки или поле пустое и обязательное, оставляем фидбек видимым
-                            toggleFeedbackVisibility(currentFeedbackConfig.container, true);
+                if (el.value.trim() === "" && isRequired) {
+                    showJsError(jsErrorDiv, "Это поле обязательно для заполнения.");
+                    el.classList.add("is-invalid");
+                    el.classList.remove("is-valid");
+                    if (djangoErrorDiv) djangoErrorDiv.style.display = "none";
+                    if (currentFeedbackConfig && currentFeedbackConfig.container) {
+                        toggleFeedbackVisibility(currentFeedbackConfig.container, true); // Показываем, чтобы видеть invalid у правил
+                        if (currentFeedbackConfig.rules) {
+                            Object.values(currentFeedbackConfig.rules).forEach((ruleEl) => updateRule(ruleEl, false, true));
+                        }
+                    }
+                } else {
+                    if (jsErrorDiv && jsErrorDiv.textContent.includes("Это поле обязательно для заполнения")) {
+                        hideJsError(jsErrorDiv);
+                    }
+
+                    let allRulesForFieldValid = true; // Флаг, что все JS правила для этого поля выполнены
+                    if (currentFeedbackConfig) {
+                        allRulesForFieldValid = currentFeedbackConfig.validate(el.value.trim(), el); // Перепроверяем все правила
+
+                        if (currentFeedbackConfig.container) {
+                            if (el.value.trim() === "" && !isRequired) {
+                                // Если поле не обязательное и пустое, скрываем фидбек
+                                toggleFeedbackVisibility(currentFeedbackConfig.container, false);
+                            } else if (allRulesForFieldValid && el.value.trim() !== "") {
+                                // Если все правила выполнены и поле не пустое, скрываем фидбек
+                                // Можно добавить задержку, чтобы пользователь успел увидеть галочки
+                                setTimeout(() => {
+                                    // Проверяем еще раз, не появилось ли ошибок от Django или JS за это время
+                                    const stillDjangoError = djangoErrorDiv && djangoErrorDiv.offsetParent !== null;
+                                    const stillJsError = jsErrorDiv && jsErrorDiv.offsetParent !== null;
+                                    if (!stillDjangoError && !stillJsError) {
+                                        toggleFeedbackVisibility(currentFeedbackConfig.container, false);
+                                    }
+                                }, 200); // Задержка в 1 секунду, можно настроить
+                            } else {
+                                // Если есть ошибки или поле пустое и обязательное, оставляем фидбек видимым
+                                toggleFeedbackVisibility(currentFeedbackConfig.container, true);
+                            }
                         }
                     }
                 }
-            }
-            updateFieldOverallValidity(el, currentFeedbackConfig); // Обновляем is-valid/is-invalid для поля
+                updateFieldOverallValidity(el, currentFeedbackConfig); // Обновляем is-valid/is-invalid для поля
+            });
+
+            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) el.classList.add("is-invalid");
         });
-    
-            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) el.classList.add('is-invalid');
-        });
-    
+
         function updateFieldOverallValidity(fieldElement, feedbackConfig) {
-            const djangoErrorDiv = fieldElement.closest('.field-container').querySelector('.django-error');
-            const jsErrorDiv = fieldElement.closest('.field-container').querySelector('.custom-error-message');
+            const djangoErrorDiv = fieldElement.closest(".field-container").querySelector(".django-error");
+            const jsErrorDiv = fieldElement.closest(".field-container").querySelector(".custom-error-message");
             let allJSRulesValid = true;
-            const isRequired = fieldElement.hasAttribute('required') || fieldElement.required;
-    
+            const isRequired = fieldElement.hasAttribute("required") || fieldElement.required;
+
             if (feedbackConfig && feedbackConfig.rules) {
-                 allJSRulesValid = Object.values(feedbackConfig.rules).every(ruleEl => !ruleEl || ruleEl.classList.contains('valid'));
-            } else if (fieldElement.name !== 'first_name' && fieldElement.name !== 'last_name' && fieldElement.value.trim() === '' && isRequired) {
+                allJSRulesValid = Object.values(feedbackConfig.rules).every((ruleEl) => !ruleEl || ruleEl.classList.contains("valid"));
+            } else if (fieldElement.name !== "first_name" && fieldElement.name !== "last_name" && fieldElement.value.trim() === "" && isRequired) {
                 // Для полей без детальных правил, но обязательных и пустых
                 allJSRulesValid = false;
             }
-    
-    
+
             const djangoErrorIsVisible = djangoErrorDiv && djangoErrorDiv.offsetParent !== null;
             const jsRequiredErrorIsVisible = jsErrorDiv && jsErrorDiv.offsetParent !== null;
-    
-            if (fieldElement.value.trim() === '' && isRequired) {
-                fieldElement.classList.add('is-invalid'); fieldElement.classList.remove('is-valid');
+
+            if (fieldElement.value.trim() === "" && isRequired) {
+                fieldElement.classList.add("is-invalid");
+                fieldElement.classList.remove("is-valid");
             } else if (allJSRulesValid && !djangoErrorIsVisible && !jsRequiredErrorIsVisible) {
-                fieldElement.classList.remove('is-invalid');
-                if (fieldElement.value.trim() !== '' || (!isRequired && fieldElement.value.trim() === '')) {
-                     fieldElement.classList.add('is-valid');
+                fieldElement.classList.remove("is-invalid");
+                if (fieldElement.value.trim() !== "" || (!isRequired && fieldElement.value.trim() === "")) {
+                    fieldElement.classList.add("is-valid");
                 } else {
-                     fieldElement.classList.remove('is-valid');
+                    fieldElement.classList.remove("is-valid");
                 }
-            } else { // Есть JS ошибки, или серверные ошибки, или JS ошибка "обязательное"
-                fieldElement.classList.add('is-invalid'); fieldElement.classList.remove('is-valid');
+            } else {
+                // Есть JS ошибки, или серверные ошибки, или JS ошибка "обязательное"
+                fieldElement.classList.add("is-invalid");
+                fieldElement.classList.remove("is-valid");
             }
         }
-    
-        function showJsError(errorDiv, message) { if (!errorDiv) return; errorDiv.textContent = message; errorDiv.style.display = 'block'; }
-        function hideJsError(errorDiv) { if (!errorDiv) return; errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+
+        function showJsError(errorDiv, message) {
+            if (!errorDiv) return;
+            errorDiv.textContent = message;
+            errorDiv.style.display = "block";
+        }
+        function hideJsError(errorDiv) {
+            if (!errorDiv) return;
+            errorDiv.textContent = "";
+            errorDiv.style.display = "none";
+        }
     });
 </script>
 {% endblock %}
