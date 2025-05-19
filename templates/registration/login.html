@@ -1,30 +1,119 @@
-{% extends "base.html" %} {% block title %}Вход{% endblock %} {% block content
-%}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <h2>Вход</h2>
-    {% if messages %} {% for message in messages %}
-    <div
-      class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show"
-      role="alert"
-    >
-      {{ message }}
-      <button
-        type="button"
-        class="btn-close"
-        data-bs-dismiss="alert"
-        aria-label="Close"
-      ></button>
-    </div>
-    {% endfor %} {% endif %}
-    <form method="post">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit" class="btn btn-primary">Войти</button>
+{% extends "base.html" %}
+{% load static %} {# Optional: if you plan to use static files specifically for this page later #}
+
+{% block title %}Вход - Бартер Онлайн{% endblock %}
+
+{% block extra_head %}
+<style>
+    .login-container {
+        max-width: 450px;
+        margin-top: 3rem;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    .login-container h2 {
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #343a40;
+    }
+    .form-floating label {
+        padding-left: 0.5rem; /* Adjust if label overlaps input */
+    }
+    .form-control:focus {
+        border-color: #0d6efd; /* Bootstrap primary color */
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container login-container">
+    <h2>Вход в аккаунт</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <p>Пожалуйста, исправьте ошибки ниже:</p>
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% endif %}
+            <ul>
+            {% for field in form %}
+                {% if field.errors %}
+                    <li><strong>{{ field.label_tag }}</strong> {{ field.errors|striptags }}</li>
+                {% endif %}
+            {% endfor %} {# <--- CORRECTED: endfor is now inside the if form.errors block #}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <div class="form-floating mb-3">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+        </div>
+        
+        <div class="form-floating mb-3">
+            {{ form.password }}
+            <label for="{{ form.password.id_for_label }}">Пароль</label>
+        </div>
+
+        {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+        
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">Войти</button>
+        </div>
     </form>
-    <p class="mt-3">
-      Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a>
-    </p>
-    {# UPDATED LINK #}
-  </div>
+
+    <div class="mt-4 text-center">
+        <p><a href="#">Забыли пароль?</a> (Не реализовано)</p> {# Link to password reset if you add it #}
+        <p>Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a></p>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{# Add any page-specific JavaScript here if needed #}
+<script>
+    // Simple script to add 'form-control' class to Django form inputs
+    // if they don't have it, for Bootstrap styling.
+    // Django's default widgets usually don't add it directly.
+    document.addEventListener('DOMContentLoaded', function() {
+        const formInputs = document.querySelectorAll('.login-container form input[type="text"], .login-container form input[type="password"], .login-container form input[type="email"]');
+        formInputs.forEach(function(input) {
+            if (!input.classList.contains('form-control')) {
+                input.classList.add('form-control');
+            }
+            // Ensure the id matches what the label `for` attribute expects
+            if (!input.id && input.name) {
+                 input.id = 'id_' + input.name;
+            }
+        });
+
+        // For floating labels, placeholder is often needed.
+        // Django's default widget for username/password doesn't set placeholder.
+        const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+        if (usernameInput && !usernameInput.hasAttribute('placeholder')) {
+            usernameInput.setAttribute('placeholder', ' '); // Or a descriptive placeholder
+        }
+        const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+        if (passwordInput && !passwordInput.hasAttribute('placeholder')) {
+            passwordInput.setAttribute('placeholder', ' '); // Or a descriptive placeholder
+        }
+    });
+</script>
 {% endblock %}
