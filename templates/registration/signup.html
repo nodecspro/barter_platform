@@ -272,30 +272,58 @@
                 updateFieldOverallValidity(el, currentFeedbackConfig);
             });
             
-            el.addEventListener('blur', function() {
-                const isRequired = el.hasAttribute('required') || el.required;
-                if (el.value.trim() === '' && isRequired) {
-                    showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
-                    el.classList.add('is-invalid'); el.classList.remove('is-valid');
-                    if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
-                    if (currentFeedbackConfig && currentFeedbackConfig.container) {
-                         toggleFeedbackVisibility(currentFeedbackConfig.container, true); // Показываем, чтобы видеть invalid
-                         // Устанавливаем все правила в invalid, если поле пустое и required
-                         if (currentFeedbackConfig.rules) {
-                            Object.values(currentFeedbackConfig.rules).forEach(ruleEl => updateRule(ruleEl, false, true));
-                         }
-                    }
-                } else {
-                    if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) hideJsError(jsErrorDiv);
-                    if (currentFeedbackConfig) {
-                        const allRulesForFieldValid = currentFeedbackConfig.validate(el.value.trim(), el);
-                        if ((allRulesForFieldValid || el.value.trim() === '') && currentFeedbackConfig.container && !isRequired) {
-                             // toggleFeedbackVisibility(currentFeedbackConfig.container, false); // Оставляем видимым для галочек
+        el.addEventListener('blur', function() {
+            const fieldContainer = el.closest('.field-container');
+            if (!fieldContainer) return;
+            const fieldName = fieldContainer.dataset.fieldName;
+            const currentFeedbackConfig = validationFeedbacks[fieldName];
+            const djangoErrorDiv = fieldContainer.querySelector('.django-error');
+            const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
+            const isRequired = el.hasAttribute('required') || el.required;
+
+            if (el.value.trim() === '' && isRequired) {
+                showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
+                el.classList.add('is-invalid'); el.classList.remove('is-valid');
+                if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
+                if (currentFeedbackConfig && currentFeedbackConfig.container) {
+                     toggleFeedbackVisibility(currentFeedbackConfig.container, true); // Показываем, чтобы видеть invalid у правил
+                     if (currentFeedbackConfig.rules) {
+                        Object.values(currentFeedbackConfig.rules).forEach(ruleEl => updateRule(ruleEl, false, true));
+                     }
+                }
+            } else {
+                if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+                    hideJsError(jsErrorDiv);
+                }
+                
+                let allRulesForFieldValid = true; // Флаг, что все JS правила для этого поля выполнены
+                if (currentFeedbackConfig) {
+                    allRulesForFieldValid = currentFeedbackConfig.validate(el.value.trim(), el); // Перепроверяем все правила
+
+                    if (currentFeedbackConfig.container) {
+                        if (el.value.trim() === '' && !isRequired) {
+                            // Если поле не обязательное и пустое, скрываем фидбек
+                            toggleFeedbackVisibility(currentFeedbackConfig.container, false);
+                        } else if (allRulesForFieldValid && el.value.trim() !== '') {
+                            // Если все правила выполнены и поле не пустое, скрываем фидбек
+                            // Можно добавить задержку, чтобы пользователь успел увидеть галочки
+                            setTimeout(() => {
+                                // Проверяем еще раз, не появилось ли ошибок от Django или JS за это время
+                                const stillDjangoError = djangoErrorDiv && djangoErrorDiv.offsetParent !== null;
+                                const stillJsError = jsErrorDiv && jsErrorDiv.offsetParent !== null;
+                                if (!stillDjangoError && !stillJsError) {
+                                     toggleFeedbackVisibility(currentFeedbackConfig.container, false);
+                                }
+                            }, 200); // Задержка в 1 секунду, можно настроить
+                        } else {
+                            // Если есть ошибки или поле пустое и обязательное, оставляем фидбек видимым
+                            toggleFeedbackVisibility(currentFeedbackConfig.container, true);
                         }
                     }
                 }
-                updateFieldOverallValidity(el, currentFeedbackConfig);
-            });
+            }
+            updateFieldOverallValidity(el, currentFeedbackConfig); // Обновляем is-valid/is-invalid для поля
+        });
     
             if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) el.classList.add('is-invalid');
         });
