@@ -5,25 +5,48 @@
 
 {% block extra_head %}
 <style>
+    /* Стили для .login-container, form-floating и т.д. должны быть идентичны тем, что в signup.html или в base.html, если они глобальные */
     .login-container {
         max-width: 450px;
         margin-top: 3rem;
         padding: 2rem;
-        background-color: #fff;
+        background-color: var(--container-box-bg); /* Используем CSS переменную */
         border-radius: 0.5rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
     }
     .login-container h2 {
         margin-bottom: 1.5rem;
         text-align: center;
-        color: #343a40;
+        /* color: #343a40; /* Цвет будет из var(--body-color) */
     }
-    .form-floating label {
-        padding-left: 0.5rem; /* Adjust if label overlaps input */
+    /* Стили для form-floating, если они не определены глобально */
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
     }
-    .form-control:focus {
-        border-color: #0d6efd; /* Bootstrap primary color */
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: var(--form-floating-label-color); /* Используем CSS переменную */
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label { /* :not(:placeholder-shown) */
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    .invalid-feedback.d-block {
+        margin-top: 0.25rem;
+        font-size: 0.875em;
     }
 </style>
 {% endblock %}
@@ -32,79 +55,152 @@
 <div class="container login-container">
     <h2>Вход в аккаунт</h2>
 
-    {% if form.errors %}
-        <div class="alert alert-danger" role="alert">
-            <p>Пожалуйста, исправьте ошибки ниже:</p>
-            {% if form.non_field_errors %}
-                {{ form.non_field_errors }}
-            {% endif %}
-            <ul>
-            {% for field in form %}
-                {% if field.errors %}
-                    <li><strong>{{ field.label_tag }}</strong> {{ field.errors|striptags }}</li>
-                {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %} {# Ошибки, не связанные с конкретным полем #}
+        <div class="alert alert-danger mt-3" role="alert">
+            {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
             {% endfor %}
-            </ul>
         </div>
     {% endif %}
 
-    <form method="post" action="{% url 'login' %}">
+    <form method="post" action="{% url 'login' %}" class="mt-3" id="loginForm" novalidate>
         {% csrf_token %}
         
-        <div class="form-floating mb-3">
-            {{ form.username }}
+        {# Имя пользователя #}
+        <div class="form-floating mb-3 field-container">
+            {{ form.username }} {# Рендерит <input id="id_username" name="username" ... > #}
             <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+            {% if form.username.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.username.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+             <div class="custom-error-message" id="{{ form.username.id_for_label }}-js-error"></div>
         </div>
         
-        <div class="form-floating mb-3">
-            {{ form.password }}
+        {# Пароль #}
+        <div class="form-floating mb-3 field-container">
+            {{ form.password }} {# Рендерит <input id="id_password" name="password" type="password" ... > #}
             <label for="{{ form.password.id_for_label }}">Пароль</label>
+            {% if form.password.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.password.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="custom-error-message" id="{{ form.password.id_for_label }}-js-error"></div>
         </div>
 
         {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}">
         {% endif %}
         
-        <div class="d-grid">
+        <div class="d-grid mt-4">
             <button type="submit" class="btn btn-primary btn-lg">Войти</button>
         </div>
     </form>
 
     <div class="mt-4 text-center">
-        <p><a href="#">Забыли пароль?</a> (Не реализовано)</p> {# Link to password reset if you add it #}
+        <p><a href="#">Забыли пароль?</a> (Не реализовано)</p>
         <p>Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a></p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-{# Add any page-specific JavaScript here if needed #}
 <script>
-    // Simple script to add 'form-control' class to Django form inputs
-    // if they don't have it, for Bootstrap styling.
-    // Django's default widgets usually don't add it directly.
-    document.addEventListener('DOMContentLoaded', function() {
-        const formInputs = document.querySelectorAll('.login-container form input[type="text"], .login-container form input[type="password"], .login-container form input[type="email"]');
-        formInputs.forEach(function(input) {
-            if (!input.classList.contains('form-control')) {
-                input.classList.add('form-control');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm'); // Убедитесь, что ID формы правильный
+    if (!form) return;
+
+    const formElements = form.querySelectorAll('.form-floating > input:not([type="hidden"]), .form-floating > select, .form-floating > textarea');
+    
+    formElements.forEach(function(el) {
+        // Базовая настройка (form-control, placeholder)
+        if (!el.classList.contains('form-control') && el.tagName.toLowerCase() !== 'select') {
+            el.classList.add('form-control');
+        }
+        if (el.tagName.toLowerCase() === 'select' && !el.classList.contains('form-select')) {
+            el.classList.add('form-select');
+        }
+
+        // КЛЮЧЕВОЙ МОМЕНТ:
+        // Для form-floating, если у поля УЖЕ ЕСТЬ ЗНАЧЕНИЕ, placeholder не нужен для "всплытия" метки.
+        // :not(:placeholder-shown) сработает.
+        // Если значения НЕТ, то нужен placeholder=" " для корректного начального состояния.
+        if (el.value === '' && !el.hasAttribute('placeholder') && (el.type === 'text' || el.type === 'email' || el.type === 'password' || el.tagName.toLowerCase() === 'textarea')) {
+            el.setAttribute('placeholder', ' ');
+        }
+
+        const fieldContainer = el.closest('.field-container');
+        if (!fieldContainer) return;
+
+        const djangoErrorDiv = fieldContainer.querySelector('.invalid-feedback.d-block'); // Ищем только ошибки Django
+        const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
+
+        // Обработчики для "живой" валидации и скрытия ошибок (аналогично signup.html)
+        el.addEventListener('input', function() {
+            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null && djangoErrorDiv.textContent.toLowerCase().includes('this field is required')) {
+                djangoErrorDiv.style.display = 'none';
             }
-            // Ensure the id matches what the label `for` attribute expects
-            if (!input.id && input.name) {
-                 input.id = 'id_' + input.name;
+            if (jsErrorDiv && jsErrorDiv.offsetParent !== null && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+                hideJsError(jsErrorDiv);
+            }
+            // Здесь можно добавить специфичную для логина JS-валидацию, если нужно (обычно не требуется)
+            // validateLoginField(el, fieldContainer);
+            // Если поле стало валидным по JS и нет других ошибок, убираем is-invalid
+            if (el.value.trim() !== '' && (!djangoErrorDiv || djangoErrorDiv.offsetParent === null)) {
+                 const currentJsError = jsErrorDiv ? jsErrorDiv.textContent : '';
+                 if(currentJsError === '' || !jsErrorDiv.offsetParent){ // Если нет активных JS ошибок
+                    el.classList.remove('is-invalid');
+                 }
             }
         });
 
-        // For floating labels, placeholder is often needed.
-        // Django's default widget for username/password doesn't set placeholder.
-        const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
-        if (usernameInput && !usernameInput.hasAttribute('placeholder')) {
-            usernameInput.setAttribute('placeholder', ' '); // Or a descriptive placeholder
-        }
-        const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
-        if (passwordInput && !passwordInput.hasAttribute('placeholder')) {
-            passwordInput.setAttribute('placeholder', ' '); // Or a descriptive placeholder
+        el.addEventListener('blur', function() {
+            const isRequired = el.hasAttribute('required') || el.required;
+            if (el.value.trim() === '' && isRequired) {
+                showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
+                el.classList.add('is-invalid');
+                if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
+            } else {
+                if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+                    hideJsError(jsErrorDiv);
+                }
+                // validateLoginField(el, fieldContainer);
+            }
+        });
+
+        // Начальная настройка is-invalid на основе ошибок Django
+        if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) {
+            el.classList.add('is-invalid');
         }
     });
+
+    function showJsError(errorDiv, message) {
+        if (!errorDiv) return;
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+
+    function hideJsError(errorDiv) {
+        if (!errorDiv) return;
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+    }
+
+});
 </script>
 {% endblock %}
