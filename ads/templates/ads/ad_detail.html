@@ -1,145 +1,153 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ ad.title }} - Бартер Онлайн{% endblock %}
+{% block title %}
+  {{ ad.title }} - Бартер Онлайн
+{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'ads/css/ad_detail_page.css' %}">
+  <link rel="stylesheet" href="{% static 'ads/css/ad_detail_page.css' %}" />
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+  <div class="container mt-4">
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}
+            {{ message.tags }}
+          {% else %}
+            info
+          {% endif %} alert-dismissible fade show"
+          role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
     {% endif %}
 
     <div class="row g-4">
-        <!-- Левая колонка: Изображение -->
-        <div class="col-lg-7">
-            {% if ad.image_url %}
-                <img src="{{ ad.image_url }}" 
-                    class="ad-detail-image shadow-sm" 
-                    alt="{{ ad.title }}"
-                    id="adMainImage" 
-                    onerror="this.style.display='none'; document.getElementById('adImagePlaceholder').style.display='flex';"> 
-                    {# При ошибке скрываем img и показываем плейсхолдер #}
-                <div id="adImagePlaceholder" class="ad-detail-no-image shadow-sm" style="display: none;"> {# Изначально скрыт, если есть img #}
-                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: var(--bs-warning);"></i>
-                    <span class="ms-3">Не удалось загрузить изображение</span>
-                </div>
-            {% else %}
-                <div class="ad-detail-no-image shadow-sm" id="adImagePlaceholder">
-                    <i class="bi bi-image-alt" style="font-size: 5rem;"></i>
-                </div>
-            {% endif %}
-        </div>
+      <!-- Левая колонка: Изображение -->
+      <div class="col-lg-7">
+        {% if ad.image_url %}
+          <img src="{{ ad.image_url }}" class="ad-detail-image shadow-sm" alt="{{ ad.title }}" id="adMainImage" onerror="this.style.display='none'; document.getElementById('adImagePlaceholder').style.display='flex';" />
+          {# При ошибке скрываем img и показываем плейсхолдер #}
+          <div id="adImagePlaceholder" class="ad-detail-no-image shadow-sm" style="display: none;">
+            {# Изначально скрыт, если есть img #}
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: var(--bs-warning);"></i>
+            <span class="ms-3">Не удалось загрузить изображение</span>
+          </div>
+        {% else %}
+          <div class="ad-detail-no-image shadow-sm" id="adImagePlaceholder">
+            <i class="bi bi-image-alt" style="font-size: 5rem;"></i>
+          </div>
+        {% endif %}
+      </div>
 
-        <!-- Правая колонка: Информация и действия -->
-        <div class="col-lg-5">
-            <h1 class="mb-3">{{ ad.title }}</h1>
-            
-            <dl class="ad-info-list">
-                <dt>Автор:</dt>
-                <dd>{{ ad.user.username }}</dd>
+      <!-- Правая колонка: Информация и действия -->
+      <div class="col-lg-5">
+        <h1 class="mb-3">{{ ad.title }}</h1>
 
-                <dt>Категория:</dt>
-                <dd>{{ ad.get_category_display }}</dd>
+        <dl class="ad-info-list">
+          <dt>Автор:</dt>
+          <dd>{{ ad.user.username }}</dd>
 
-                <dt>Состояние:</dt>
-                <dd>{{ ad.get_condition_display }}</dd>
+          <dt>Категория:</dt>
+          <dd>{{ ad.get_category_display }}</dd>
 
-                <dt>Дата публикации:</dt>
-                <dd>{{ ad.created_at|date:"d.m.Y H:i" }}</dd>
-            </dl>
-            
-            {% if not ad.is_active %}
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Это объявление больше неактивно.
-                </div>
-            {% endif %}
+          <dt>Состояние:</dt>
+          <dd>{{ ad.get_condition_display }}</dd>
 
-            <hr>
+          <dt>Дата публикации:</dt>
+          <dd>{{ ad.created_at|date:'d.m.Y H:i' }}</dd>
+        </dl>
 
-            {% if user.is_authenticated %}
-                {% if ad.user == user %}
-                    {# Это объявление текущего пользователя #}
-                    <div class="action-buttons mb-3">
-                        <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-lg btn-warning">
-                            <i class="bi bi-pencil-square me-1"></i>Редактировать
-                        </a>
-                        <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-lg btn-danger">
-                            <i class="bi bi-trash me-1"></i>Удалить
-                        </a>
+        {% if not ad.is_active %}
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Это объявление больше неактивно.
+          </div>
+        {% endif %}
+
+        <hr />
+
+        {% if user.is_authenticated %}
+          {% if ad.user == user %}
+            {# Это объявление текущего пользователя #}
+            <div class="action-buttons mb-3">
+              <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-lg btn-warning"><i class="bi bi-pencil-square me-1"></i>Редактировать</a>
+              <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-lg btn-danger"><i class="bi bi-trash me-1"></i>Удалить</a>
+            </div>
+          {% elif ad.is_active %}
+            {# Это чужое активное объявление, можно предложить обмен #}
+            <div class="proposal-section mt-3">
+              <h4><i class="bi bi-arrow-repeat me-2"></i>Предложить обмен</h4>
+              {% if existing_proposals %}
+                <p class="small text-muted">Вы уже отправляли предложения по этому товару:</p>
+                {% for prop in existing_proposals %}
+                  <div class="existing-proposal-item small">
+                    <strong>Ваш товар:</strong> {{ prop.ad_sender.title }}<br />
+                    <strong>Статус:</strong> <span class="badge rounded-pill 
+                                    {% if prop.status == 'pending' %}
+                        text-bg-warning
+                      {% elif prop.status == 'accepted' %}
+                        text-bg-success
+                      {% elif prop.status == 'rejected' %}
+                        text-bg-danger
+                      {% else %}
+                        text-bg-secondary
+                      {% endif %}">
+                      {{ prop.get_status_display }}
+                    </span>
+                  </div>
+                {% endfor %}
+                <hr />
+              {% endif %}
+
+              {% if proposal_form %}
+                {% if proposal_form.fields.ad_sender.queryset.exists %}
+                  <form method="post" action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
+                    {% csrf_token %}
+                    {# Рендерим поля формы с form-floating #}
+                    <div class="form-floating mb-3">
+                      {{ proposal_form.ad_sender }}
+                      <label for="{{ proposal_form.ad_sender.id_for_label }}">{{ proposal_form.ad_sender.label }}</label>
                     </div>
-                {% elif ad.is_active %}
-                    {# Это чужое активное объявление, можно предложить обмен #}
-                    <div class="proposal-section mt-3">
-                        <h4><i class="bi bi-arrow-repeat me-2"></i>Предложить обмен</h4>
-                        {% if existing_proposals %}
-                            <p class="small text-muted">Вы уже отправляли предложения по этому товару:</p>
-                            {% for prop in existing_proposals %}
-                            <div class="existing-proposal-item small">
-                                <strong>Ваш товар:</strong> {{ prop.ad_sender.title }}<br>
-                                <strong>Статус:</strong> <span class="badge rounded-pill 
-                                    {% if prop.status == 'pending' %}text-bg-warning{% elif prop.status == 'accepted' %}text-bg-success{% elif prop.status == 'rejected' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
-                                    {{ prop.get_status_display }}
-                                </span>
-                            </div>
-                            {% endfor %}
-                            <hr>
-                        {% endif %}
-                        
-                        {% if proposal_form %}
-                            {% if proposal_form.fields.ad_sender.queryset.exists %}
-                            <form method="post" action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
-                                {% csrf_token %}
-                                {# Рендерим поля формы с form-floating #}
-                                <div class="form-floating mb-3">
-                                    {{ proposal_form.ad_sender }}
-                                    <label for="{{ proposal_form.ad_sender.id_for_label }}">{{ proposal_form.ad_sender.label }}</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    {{ proposal_form.comment }}
-                                    <label for="{{ proposal_form.comment.id_for_label }}">{{ proposal_form.comment.label }}</label>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">Отправить предложение</button>
-                            </form>
-                            {% else %}
-                            <div class="alert alert-light text-center small" role="alert">
-                                У вас нет активных объявлений, чтобы предложить обмен.<br>
-                                <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-outline-primary mt-2">Создать объявление</a>
-                            </div>
-                            {% endif %}
-                        {% endif %}
+                    <div class="form-floating mb-3">
+                      {{ proposal_form.comment }}
+                      <label for="{{ proposal_form.comment.id_for_label }}">{{ proposal_form.comment.label }}</label>
                     </div>
+                    <button type="submit" class="btn btn-success w-100">Отправить предложение</button>
+                  </form>
+                {% else %}
+                  <div class="alert alert-light text-center small" role="alert">
+                    У вас нет активных объявлений, чтобы предложить обмен.<br />
+                    <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-outline-primary mt-2">Создать объявление</a>
+                  </div>
                 {% endif %}
-            {% else %}
-                {# Пользователь не аутентифицирован #}
-                 {% if ad.is_active %}
-                <div class="alert alert-info text-center mt-3" role="alert">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>
-                    <a href="{% url 'login' %}?next={{ request.path }}">Войдите</a> или <a href="{% url 'signup' %}?next={{ request.path }}">зарегистрируйтесь</a>, чтобы предложить обмен.
-                </div>
-                {% endif %}
-            {% endif %}
-        </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% else %}
+          {# Пользователь не аутентифицирован #}
+          {% if ad.is_active %}
+            <div class="alert alert-info text-center mt-3" role="alert">
+              <i class="bi bi-box-arrow-in-right me-2"></i>
+              <a href="{% url 'login' %}?next={{ request.path }}">Войдите</a> или <a href="{% url 'signup' %}?next={{ request.path }}">зарегистрируйтесь</a>, чтобы предложить обмен.
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
     </div>
 
     <div class="row mt-4">
-        <div class="col-12">
-            <hr>
-            <h4><i class="bi bi-card-text me-2"></i>Описание товара:</h4>
-            <div class="mt-2" style="white-space: pre-wrap;">{{ ad.description|linebreaksbr }}</div>
-        </div>
+      <div class="col-12">
+        <hr />
+        <h4><i class="bi bi-card-text me-2"></i>Описание товара:</h4>
+        <div class="mt-2" style="white-space: pre-wrap;">{{ ad.description|linebreaksbr }}</div>
+      </div>
     </div>
-</div>
+  </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'ads/js/ad_detail_interactive.js' %}"></script>
+  <script src="{% static 'ads/js/ad_detail_interactive.js' %}"></script>
 {% endblock %}
