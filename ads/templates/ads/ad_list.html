@@ -29,15 +29,17 @@
     </div>
 </form>
 
+
 {% if ads %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for ad in ads %}
         <div class="col">
             <div class="card h-100">
-                {% if ad.image_url %}
+                {% if ad.image_url %}  {# Проверяем, есть ли URL изображения #}
                     <img src="{{ ad.image_url }}" class="card-img-top ad-card-img" alt="{{ ad.title }}">
                 {% else %}
-                    <img src="https://via.placeholder.com/300x200.png?text=No+Image" class="card-img-top ad-card-img" alt="No image available">
+                    {# Ничего не выводим здесь, или можно вывести стилизованный div-плейсхолдер #}
+                    {# <div class="card-img-top ad-card-img-placeholder"></div> #}
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title"><a href="{{ ad.get_absolute_url }}">{{ ad.title }}</a></h5>
