@@ -1,51 +1,10 @@
-{% extends "base.html" %} {% load static %} {% block title %}Вход - Бартер Онлайн{% endblock %} {% block extra_head %}
-<style>
-    /* Стили для .login-container, form-floating и т.д. должны быть идентичны тем, что в signup.html или в base.html, если они глобальные */
-    .login-container {
-        max-width: 450px;
-        margin-top: 3rem;
-        padding: 2rem;
-        background-color: var(--container-box-bg); /* Используем CSS переменную */
-        border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-    }
-    .login-container h2 {
-        margin-bottom: 1.5rem;
-        text-align: center;
-        /* color: #343a40; /* Цвет будет из var(--body-color) */
-    }
-    /* Стили для form-floating, если они не определены глобально */
-    .form-floating > .form-control,
-    .form-floating > .form-select {
-        height: calc(3.5rem + 2px);
-        line-height: 1.25;
-        padding-top: 1.625rem;
-        padding-bottom: 0.625rem;
-    }
-    .form-floating > label {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        padding: 1rem 0.75rem;
-        pointer-events: none;
-        border: 1px solid transparent;
-        transform-origin: 0 0;
-        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-        color: var(--form-floating-label-color); /* Используем CSS переменную */
-    }
-    .form-floating > .form-control:focus ~ label,
-    .form-floating > .form-control:not(:placeholder-shown) ~ label {
-        /* :not(:placeholder-shown) */
-        opacity: 0.65;
-        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-    }
-    .invalid-feedback.d-block {
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-    }
-</style>
-{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Вход - Бартер Онлайн{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/auth_forms.css' %}">
+{% endblock %}
+{% block content %}
 <div class="container login-container">
     <h2>Вход в аккаунт</h2>
 

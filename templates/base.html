@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="ru">
     <head>
         <meta charset="utf-8" />
@@ -39,163 +40,11 @@
                 }
             })();
         </script>
-
+        
+        <link rel="stylesheet" href="{% static 'css/base_theme.css' %}">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        <style>
-            /* Базовые стили, которые должны работать и для светлой, и для темной темы */
-            :root {
-                /* Цвета для светлой темы (по умолчанию для Bootstrap) */
-                --body-bg: #f8f9fa;
-                --body-color: #212529;
-                --card-bg: #fff;
-                --card-border-color: rgba(0, 0, 0, 0.175);
-                --list-group-bg: #fff;
-                --list-group-border-color: rgba(0, 0, 0, 0.125);
-                --form-control-bg: #fff;
-                --form-control-color: #212529;
-                --form-control-border-color: #ced4da;
-                --form-floating-label-color: #6c757d;
-                --text-muted-color: #6c757d;
-                --link-color: #0d6efd;
-                --link-hover-color: #0a58ca;
-                --alert-danger-bg: #f8d7da;
-                --alert-danger-color: #842029;
-                --alert-danger-border-color: #f5c2c7;
-                --footer-bg: #e9ecef;
-                --footer-color: #6c757d;
-                --container-box-bg: #fff; /* Для signup-container, login-container */
-            }
-
-            [data-bs-theme="dark"] {
-                /* Цвета для темной темы */
-                --body-bg: #212529;
-                --body-color: #dee2e6;
-                --card-bg: #2b3035; /* Немного светлее основного фона */
-                --card-border-color: #495057;
-                --list-group-bg: #2b3035;
-                --list-group-border-color: #495057;
-                --form-control-bg: #343a40;
-                --form-control-color: #dee2e6;
-                --form-control-border-color: #495057;
-                --form-floating-label-color: #adb5bd;
-                --text-muted-color: #8d969e;
-                --link-color: #8ab4f8;
-                --link-hover-color: #a7c5f9;
-                --alert-danger-bg: #49292d;
-                --alert-danger-color: #f8d7da;
-                --alert-danger-border-color: #5e3034;
-                --footer-bg: #1c1f23;
-                --footer-color: #adb5bd;
-                --container-box-bg: #272b30;
-            }
-
-            body {
-                padding-top: 5rem;
-                padding-bottom: 60px; /* Отступ для фиксированного футера */
-                background-color: var(--body-bg);
-                color: var(--body-color);
-                /* Переход для плавной смены темы пользователем */
-                transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            }
-
-            /* Когда есть класс no-theme-transition-on-load, отключаем переходы для body и ключевых элементов */
-            /* Можно использовать '*' для более глобального отключения, но это может быть избыточно */
-            html.no-theme-transition-on-load body,
-            html.no-theme-transition-on-load .card,
-            html.no-theme-transition-on-load .list-group-item,
-            html.no-theme-transition-on-load .form-control,
-            html.no-theme-transition-on-load .signup-container,
-            html.no-theme-transition-on-load .login-container,
-            html.no-theme-transition-on-load .footer {
-                transition: none !important;
-            }
-            /* Если нужно еще более глобально, но аккуратно: */
-            /* html.no-theme-transition-on-load * { transition-duration: 0s !important; } */
-
-            .card {
-                background-color: var(--card-bg);
-                border-color: var(--card-border-color);
-                transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            }
-            .list-group-item {
-                background-color: var(--list-group-bg);
-                border-color: var(--list-group-border-color);
-                transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            }
-            .form-control {
-                background-color: var(--form-control-bg);
-                color: var(--form-control-color);
-                border-color: var(--form-control-border-color);
-                transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            }
-            .form-control:focus {
-                /* Фокус должен работать для обеих тем */
-                border-color: #86b7fe; /* Bootstrap primary focus color */
-                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-                background-color: var(--form-control-bg); /* Сохраняем фон при фокусе */
-                color: var(--form-control-color); /* Сохраняем цвет текста при фокусе */
-            }
-            .form-floating > label {
-                color: var(--form-floating-label-color);
-            }
-            .form-floating > .form-control:focus ~ label,
-            .form-floating > .form-control:not(:placeholder-shown) ~ label {
-                color: var(--form-floating-label-color); /* Можно сделать чуть ярче при активации, если нужно */
-                opacity: 0.65;
-            }
-            .text-muted {
-                color: var(--text-muted-color) !important;
-            } /* !important может быть нужен для Bootstrap */
-            a {
-                color: var(--link-color);
-            }
-            a:hover {
-                color: var(--link-hover-color);
-            }
-
-            .alert-danger {
-                background-color: var(--alert-danger-bg);
-                color: var(--alert-danger-color);
-                border-color: var(--alert-danger-border-color);
-            }
-
-            .footer {
-                padding: 1rem 0;
-                background-color: var(--footer-bg);
-                color: var(--footer-color);
-                text-align: center;
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-                font-size: 0.9em;
-                transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            }
-            .container {
-                max-width: 1140px;
-            }
-            .ad-card-img {
-                max-height: 200px;
-                object-fit: cover;
-                width: 100%;
-            }
-            .signup-container,
-            .login-container {
-                max-width: 550px;
-                margin-top: 2rem;
-                margin-bottom: 3rem;
-                padding: 2rem;
-                background-color: var(--container-box-bg); /* Используем переменную */
-                border-radius: 0.5rem;
-                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-                transition: background-color 0.2s ease-in-out;
-            }
-            /* ... другие общие стили и стили для password-requirements ... */
-            .password-requirements {
-                /* ... как в предыдущем ответе ... */
-            }
-        </style>
         {% block extra_head %}{% endblock %}
     </head>
     <body>

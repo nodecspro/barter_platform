@@ -1,0 +1,78 @@
+.filter-panel {
+    background-color: var(--bs-tertiary-bg);
+    /* Легкий фон для панели фильтров */
+    padding: 1.5rem;
+    border-radius: 0.375rem;
+    /* Bootstrap's rounded */
+    margin-bottom: 2rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, .075);
+    /* Легкая тень */
+}
+
+.ad-list-card .card-img-top {
+    height: 220px;
+    /* Немного больше высота для списка */
+    object-fit: cover;
+    background-color: var(--bs-secondary-bg);
+}
+
+.ad-list-card .card-title a {
+    color: var(--body-color);
+    text-decoration: none;
+    font-weight: 500;
+    /* Немного жирнее */
+}
+
+.ad-list-card .card-title a:hover {
+    color: var(--link-hover-color);
+}
+
+.ad-list-card .badge {
+    font-size: 0.8em;
+}
+
+.ad-list-card .card-img-top,
+.ad-list-card .ad-list-card-placeholder {
+    /* Применяем стили и к плейсхолдеру */
+    height: 220px;
+    object-fit: cover;
+    /* Для <img> */
+    background-color: var(--bs-secondary-bg);
+    /* Фон для плейсхолдера, если это div */
+    display: flex;
+    /* Для div-плейсхолдера, чтобы центрировать содержимое */
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-list-card .card-img-top-wrapper {
+    height: 220px;
+    background-color: var(--bs-tertiary-bg);
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-list-card .card-img-top-wrapper img.card-img-top {
+    /* Стили для самого <img> */
+    display: block;
+    /* Важно, чтобы img вел себя как блок */
+    width: 100%;
+    height: 100%;
+    /* Растягиваем на всю высоту родителя */
+    object-fit: cover;
+    /* background-color убираем отсюда, он на wrapper */
+}
+
+.ad-list-card .ad-list-card-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* <--- Ключевое свойство для центрирования СОДЕРЖИМОГО плейсхолдера */
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    color: var(--bs-secondary-color);
+    /* background-color убираем отсюда, он на wrapper, если плейсхолдер занимает всю область */
+}
