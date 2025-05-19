@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
-from django import forms
 
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
@@ -21,7 +20,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 from .models import Ad, ExchangeProposal
-from .forms import AdForm, ExchangeProposalForm
+from .forms import AdForm, ExchangeProposalForm, CustomUserRegistrationForm
 from .serializers import AdSerializer, ExchangeProposalSerializer
 from .permissions import (
     IsOwnerOrReadOnly,
@@ -29,7 +28,6 @@ from .permissions import (
     IsReceiverOfAdForProposal,
 )
 
-from .forms import AdForm, ExchangeProposalForm, CustomUserCreationForm
 
 # --- HTML Views (Django CBV) ---
 
@@ -88,9 +86,9 @@ class AdCreateView(LoginRequiredMixin, CreateView):
     model = Ad
     form_class = AdForm
     template_name = "ads/ad_form.html"
-    # success_url = reverse_lazy('ads:ad_list') # Or redirect to detail view
 
     def form_valid(self, form):
+        user = form.save()
         form.instance.user = self.request.user
         messages.success(self.request, "Объявление успешно создано!")
         return super().form_valid(form)
@@ -417,20 +415,14 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
 
 
 class SignUpView(CreateView):
-    form_class = CustomUserCreationForm
+    form_class = CustomUserRegistrationForm
     success_url = reverse_lazy(
         "login"
     )  # Or 'ads:ad_list' if you want to redirect to main page
     template_name = "registration/signup.html"
 
     def form_valid(self, form):
-        # This method is called when valid form data has been POSTed.
-        # It should return an HttpResponse.
         user = form.save()
-        # Optional: Log the user in directly after registration
-        # login(self.request, user)
-        # messages.success(self.request, "Регистрация прошла успешно! Теперь вы можете войти.")
-        # If not logging in directly, send a success message for the login page.
         messages.success(
             self.request, "Регистрация прошла успешно! Пожалуйста, войдите."
         )

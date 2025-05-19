@@ -55,15 +55,6 @@
 <div class="container login-container">
     <h2>Вход в аккаунт</h2>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mt-3" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
     {% if form.non_field_errors %} {# Ошибки, не связанные с конкретным полем #}
         <div class="alert alert-danger mt-3" role="alert">
             {% for error in form.non_field_errors %}
@@ -179,7 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
                     hideJsError(jsErrorDiv);
                 }
-                // validateLoginField(el, fieldContainer);
             }
         });
 
