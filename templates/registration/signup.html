@@ -5,53 +5,140 @@
 
 {% block extra_head %}
 <style>
-    .signup-container { max-width: 550px; margin-top: 2rem; margin-bottom: 3rem; padding: 2rem; background-color: #fff; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); }
-    .signup-container h2 { margin-bottom: 1.5rem; text-align: center; color: #343a40; }
+    .signup-container {
+        max-width: 550px;
+        margin-top: 2rem;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    .signup-container h2 {
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #343a40;
+    }
 
-    /* Стили для form-floating (предполагается, что они уже есть или взяты из Bootstrap) */
-    .form-floating > .form-control, .form-floating > .form-select { height: calc(3.5rem + 2px); line-height: 1.25; padding-top: 1.625rem; padding-bottom: 0.625rem; }
-    .form-floating > label { position: absolute; top: 0; left: 0; height: 100%; padding: 1rem 0.75rem; pointer-events: none; border: 1px solid transparent; transform-origin: 0 0; transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out; color: #6c757d; }
-    .form-floating > .form-control:focus ~ label, .form-floating > .form-control:not(:placeholder-shown) ~ label, .form-floating > .form-select ~ label { opacity: 0.65; transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem); }
-    .form-control:focus { border-color: #86b7fe; outline: 0; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
-    
+    /* Стили для form-floating */
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+    }
+    .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: #6c757d;
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label { /* Для select, если будете использовать */
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    .form-control:focus {
+        border-color: #86b7fe; /* Bootstrap focus color */
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+     /* Стили для Bootstrap is-valid / is-invalid */
+    .form-control.is-valid, .was-validated .form-control:valid {
+        border-color: #198754; /* success */
+        padding-right: calc(1.5em + .75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4M3.7 6.73L1.3 4.53c-.4-1.04.46-1.4M7.4 1.23L4.1 5.83c-.4 1.04.46 1.4'%3e%3c/path%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(.375em + .1875rem) center;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+    }
+    .form-control.is-valid:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25);
+    }
+    .form-control.is-invalid, .was-validated .form-control:invalid {
+        border-color: #dc3545; /* danger */
+        padding-right: calc(1.5em + .75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(.375em + .1875rem) center;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+    }
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25);
+    }
+
+
     /* Стили для динамических подсказок валидации */
-    .field-validation-feedback {
+    .field-validation-feedback,
+    .password-requirements {
         font-size: 0.875em;
         padding-left: 0.5rem;
-        margin-top: 0.5rem;
+        margin-top: 0.25rem; /* Уменьшил отступ, чтобы было ближе к полю */
         margin-bottom: 1rem;
-        display: none; /* Изначально скрыт */
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out, visibility 0s linear 0.3s;
     }
-    .field-validation-feedback ul { list-style: none; padding: 0; margin: 0; }
-    .field-validation-feedback li {
-        margin-bottom: 0.3rem;
-        transition: color 0.3s ease, opacity 0.3s ease;
-        color: #6c757d; /* Изначальный цвет (серый, не проверено/не выполнено) */
-        opacity: 0.8;
-        position: relative;
-        padding-left: 1.2em;
+
+    .field-validation-feedback.visible,
+    .password-requirements.visible {
+        opacity: 1;
+        max-height: 200px; /* Достаточно для большинства списков правил */
+        visibility: visible;
+        transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out, visibility 0s linear 0s;
     }
-    .field-validation-feedback li::before { font-family: 'Courier New', Courier, monospace; position: absolute; left: 0; }
-    .field-validation-feedback li.valid { color: #198754; opacity: 1; }
-    .field-validation-feedback li.valid::before { content: "✓"; color: #198754; }
-    .field-validation-feedback li.invalid { color: #dc3545; opacity: 1; }
-    .field-validation-feedback li.invalid::before { content: "✗"; color: #dc3545; }
 
-    /* Убираем стандартный Bootstrap invalid-feedback, если используем свой */
-    .form-floating > .invalid-feedback { display: none !important; } 
-    /* Показываем его только если наш JS его не обработал */
-    .form-floating.was-validated > .invalid-feedback { display: block !important; }
-
-
-    /* Стили для password-requirements остаются такими же, как в предыдущем ответе */
-    .password-requirements { font-size: 0.875em; padding-left: 0.5rem; margin-top: 0.5rem; margin-bottom: 1rem; display: none; }
+    .field-validation-feedback ul,
     .password-requirements ul { list-style: none; padding: 0; margin: 0; }
-    .password-requirements li { margin-bottom: 0.3rem; transition: color 0.3s ease, opacity 0.3s ease; color: #6c757d; opacity: 0.7; position: relative; padding-left: 1.2em; }
-    .password-requirements li::before { font-family: 'Courier New', Courier, monospace; position: absolute; left: 0; }
-    .password-requirements li.valid { color: #198754; opacity: 1; }
-    .password-requirements li.valid::before { content: "✓"; color: #198754; }
-    .password-requirements li.invalid { color: #dc3545; opacity: 1; }
-    .password-requirements li.invalid::before { content: "✗"; color: #dc3545; }
+
+    .field-validation-feedback li,
+    .password-requirements li {
+        margin-bottom: 0.3rem;
+        color: #6c757d; /* Изначальный цвет */
+        position: relative;
+        padding-left: 1.3em; /* Место для иконки */
+        line-height: 1.4;
+    }
+    .field-validation-feedback li::before,
+    .password-requirements li::before {
+        font-family: 'bootstrap-icons', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* Используем шрифт Bootstrap Icons или системный */
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+    }
+    .field-validation-feedback li.valid,
+    .password-requirements li.valid {
+        color: #198754; /* Bootstrap success */
+    }
+    .field-validation-feedback li.valid::before,
+    .password-requirements li.valid::before {
+        content: "\F26E"; /* Bootstrap Icons check-lg */
+        color: #198754;
+    }
+    .field-validation-feedback li.invalid,
+    .password-requirements li.invalid {
+        color: #dc3545; /* Bootstrap danger */
+    }
+    .field-validation-feedback li.invalid::before,
+    .password-requirements li.invalid::before {
+        content: "\F622"; /* Bootstrap Icons x-lg */
+        color: #dc3545;
+    }
+    /* Скрываем стандартный Bootstrap invalid-feedback, если используем свой (если не нужен вообще) */
+    .form-floating > .invalid-feedback.server-error:not(:empty) { display: block !important; } /* Показываем только серверные ошибки, если они есть */
+    .form-floating > .invalid-feedback:not(.server-error) { display: none !important; }
 </style>
 {% endblock %}
 
@@ -67,15 +154,15 @@
         </div>
     {% endif %}
 
-    <form method="post" class="mt-3" novalidate> {# novalidate отключает стандартную HTML5 валидацию браузера #}
+    <form method="post" class="mt-3" novalidate>
         {% csrf_token %}
 
         {% for field in form %}
             <div class="form-floating mb-2">
-                {{ field }}
+                {{ field }} {# Рендерит <input>, <select> и т.д. #}
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 
-                {# Стандартные ошибки Django, если наша JS валидация их не перехватила или для других полей #}
+                {# Серверные ошибки Django (если JS валидация их не обработала или их нет в JS) #}
                 {% if field.errors %}
                     <div class="invalid-feedback d-block server-error">
                         {% for error in field.errors %}
@@ -92,7 +179,6 @@
                 <ul>
                     <li id="un-length">Быть от 3 до 150 символов.</li>
                     <li id="un-chars">Содержать только буквы, цифры и @/./+/-/_.</li>
-                    {# <li id="un-unique">Быть уникальным (проверка позже, если AJAX).</li> #}
                 </ul>
             </div>
             {% endif %}
@@ -103,12 +189,11 @@
                 <p class="mb-1 small text-muted">Email должен:</p>
                 <ul>
                     <li id="em-format">Иметь корректный формат (например, user@example.com).</li>
-                    {# <li id="em-unique">Быть уникальным (проверка позже, если AJAX).</li> #}
                 </ul>
             </div>
             {% endif %}
 
-            {# Динамический блок для требований к паролю (остается как есть) #}
+            {# Динамический блок для требований к паролю #}
             {% if field.name == 'password' %}
             <div id="password-rules-container" class="password-requirements mb-3">
                 <p class="mb-1 small text-muted">Пароль должен:</p>
@@ -120,7 +205,7 @@
             </div>
             {% endif %}
 
-            {# Для password2 можно добавить проверку на совпадение с password1 #}
+            {# Динамический блок для проверки совпадения паролей #}
              {% if field.name == 'password2' %}
             <div id="password2-feedback" class="field-validation-feedback mb-3">
                 <ul>
@@ -157,19 +242,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!el.hasAttribute('placeholder') && (el.type === 'text' || el.type === 'email' || el.type === 'password' || el.tagName.toLowerCase() === 'textarea')) {
             el.setAttribute('placeholder', ' ');
         }
-        // Скрываем стандартные серверные ошибки, если есть наш блок для JS валидации
-        const fieldName = el.name;
-        const feedbackDiv = document.getElementById(fieldName + '-feedback') || (fieldName === 'password' ? document.getElementById('password-rules-container') : null);
-        const serverErrorDiv = el.closest('.form-floating').querySelector('.server-error');
-        if (feedbackDiv && serverErrorDiv) {
-            // serverErrorDiv.style.display = 'none'; // Скрываем, если будем показывать ошибки в нашем блоке
-        } else if (serverErrorDiv) {
-            el.classList.add('is-invalid'); // Показываем is-invalid для серверных ошибок, если нет JS блока
+        
+        // Показываем is-invalid для серверных ошибок, если JS блок их не перекроет
+        const serverErrorDiv = el.closest('.form-floating').querySelector('.server-error.d-block');
+        if (serverErrorDiv) {
+            el.classList.add('is-invalid');
         }
-
     });
 
-    // --- Общая функция для обновления статуса правила валидации ---
     function updateValidationRuleUI(ruleElement, isValid, fieldElement, markInvalidIfNotEmpty = true) {
         if (isValid) {
             ruleElement.classList.add('valid');
@@ -179,155 +259,194 @@ document.addEventListener('DOMContentLoaded', function() {
             if (markInvalidIfNotEmpty && fieldElement.value.length > 0) {
                 ruleElement.classList.add('invalid');
             } else {
-                ruleElement.classList.remove('invalid');
+                ruleElement.classList.remove('invalid'); // Сбрасываем, если поле пустое
             }
         }
     }
     
-    // --- Валидация для Username ---
-    const usernameField = document.getElementById('{{ form.username.id_for_label }}');
-    const usernameFeedbackDiv = document.getElementById('username-feedback');
-    if (usernameField && usernameFeedbackDiv) {
-        const unLength = usernameFeedbackDiv.querySelector('#un-length');
-        const unChars = usernameFeedbackDiv.querySelector('#un-chars');
+    function areAllRulesValid(feedbackDiv) {
+        if (!feedbackDiv) return false;
+        const rules = feedbackDiv.querySelectorAll('ul li');
+        for (let rule of rules) {
+            if (rule.style.display !== 'none' && !rule.classList.contains('valid')) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-        usernameField.addEventListener('focus', () => { usernameFeedbackDiv.style.display = 'block'; validateUsername(); });
-        usernameField.addEventListener('input', validateUsername);
-        // usernameField.addEventListener('blur', () => { if (usernameField.value.length === 0) usernameFeedbackDiv.style.display = 'none'; });
+    function setupFieldValidation(fieldId, feedbackDivId, rulesToQuery, validationFunction, options = {}) {
+        const fieldElement = document.getElementById(fieldId);
+        const feedbackDiv = document.getElementById(feedbackDivId);
 
+        if (!fieldElement || !feedbackDiv) {
+            // console.warn(`Element not found for fieldId: ${fieldId} or feedbackDivId: ${feedbackDivId}`);
+            return;
+        }
 
-        function validateUsername() {
-            const value = usernameField.value;
-            let isFieldValid = true;
+        const rules = {};
+        if (rulesToQuery) {
+            for (const ruleKey in rulesToQuery) {
+                rules[ruleKey] = feedbackDiv.querySelector(rulesToQuery[ruleKey]);
+                // if (!rules[ruleKey]) console.warn(`Rule element not found for selector: ${rulesToQuery[ruleKey]} in ${feedbackDivId}`);
+            }
+        }
 
-            // Длина
+        const handleFocus = () => {
+            feedbackDiv.classList.add('visible');
+            if (validationFunction) validationFunction(fieldElement, feedbackDiv, rules);
+        };
+
+        const handleInput = () => {
+            if (validationFunction) validationFunction(fieldElement, feedbackDiv, rules);
+        };
+
+        const handleBlur = () => {
+            if (fieldElement.value.length === 0) {
+                feedbackDiv.classList.remove('visible');
+                fieldElement.classList.remove('is-valid', 'is-invalid');
+                if (rules) {
+                    Object.values(rules).forEach(ruleEl => {
+                        if (ruleEl) ruleEl.classList.remove('valid', 'invalid');
+                    });
+                }
+            } else if (options.hideOnValidBlur && areAllRulesValid(feedbackDiv)) {
+                feedbackDiv.classList.remove('visible');
+            }
+        };
+
+        fieldElement.addEventListener('focus', handleFocus);
+        if (validationFunction) {
+            fieldElement.addEventListener('input', handleInput);
+        }
+        fieldElement.addEventListener('blur', handleBlur);
+    }
+
+    // --- Применение общей функции к полям ---
+    setupFieldValidation(
+        '{{ form.username.id_for_label }}', 
+        'username-feedback', 
+        { length: '#un-length', chars: '#un-chars' }, 
+        function validateUsername(field, feedbackDiv, rules) {
+            const value = field.value;
+            let isFieldValidOverall = true;
+
             const lengthValid = value.length >= 3 && value.length <= 150;
-            updateValidationRuleUI(unLength, lengthValid, usernameField);
-            if (!lengthValid && value.length > 0) isFieldValid = false;
+            updateValidationRuleUI(rules.length, lengthValid, field);
+            if (!lengthValid && value.length > 0) isFieldValidOverall = false;
 
-            // Символы (Django's UsernameValidator: letters, digits and @/./+/-/_ only)
             const charsValid = /^[a-zA-Z0-9@.+_-]+$/.test(value) || value.length === 0;
-            updateValidationRuleUI(unChars, charsValid, usernameField);
-            if (!charsValid && value.length > 0) isFieldValid = false;
+            updateValidationRuleUI(rules.chars, charsValid, field);
+            if (!charsValid && value.length > 0) isFieldValidOverall = false;
             
-            // Обновление класса is-valid/is-invalid для поля
             if (value.length > 0) {
-                if (isFieldValid) {
-                    usernameField.classList.add('is-valid');
-                    usernameField.classList.remove('is-invalid');
-                } else {
-                    usernameField.classList.add('is-invalid');
-                    usernameField.classList.remove('is-valid');
-                }
+                field.classList.toggle('is-valid', isFieldValidOverall);
+                field.classList.toggle('is-invalid', !isFieldValidOverall);
             } else {
-                usernameField.classList.remove('is-valid', 'is-invalid');
+                field.classList.remove('is-valid', 'is-invalid');
             }
-        }
-    }
+        },
+        { hideOnValidBlur: true }
+    );
 
-    // --- Валидация для Email ---
-    const emailField = document.getElementById('{{ form.email.id_for_label }}');
-    const emailFeedbackDiv = document.getElementById('email-feedback');
-    if (emailField && emailFeedbackDiv) {
-        const emFormat = emailFeedbackDiv.querySelector('#em-format');
-
-        emailField.addEventListener('focus', () => { emailFeedbackDiv.style.display = 'block'; validateEmail(); });
-        emailField.addEventListener('input', validateEmail);
-        // emailField.addEventListener('blur', () => { if (emailField.value.length === 0) emailFeedbackDiv.style.display = 'none'; });
-
-        function validateEmail() {
-            const value = emailField.value;
-            let isFieldValid = true;
-            // Простой regex для формата email. Django EmailValidator сложнее.
+    setupFieldValidation(
+        '{{ form.email.id_for_label }}', 
+        'email-feedback', 
+        { format: '#em-format' }, 
+        function validateEmail(field, feedbackDiv, rules) {
+            const value = field.value;
             const formatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value.length === 0;
-            updateValidationRuleUI(emFormat, formatValid, emailField);
-            if (!formatValid && value.length > 0) isFieldValid = false;
+            updateValidationRuleUI(rules.format, formatValid, field);
 
             if (value.length > 0) {
-                if (isFieldValid) {
-                    emailField.classList.add('is-valid');
-                    emailField.classList.remove('is-invalid');
-                } else {
-                    emailField.classList.add('is-invalid');
-                    emailField.classList.remove('is-valid');
-                }
+                field.classList.toggle('is-valid', formatValid);
+                field.classList.toggle('is-invalid', !formatValid);
             } else {
-                emailField.classList.remove('is-valid', 'is-invalid');
+                field.classList.remove('is-valid', 'is-invalid');
             }
-        }
-    }
+        },
+        { hideOnValidBlur: true } // Скрывать email фидбэк, если валидно
+    );
 
-    // --- Валидация для Password (остается как есть) ---
-    const passwordField = document.getElementById('{{ form.password.id_for_label }}');
-    const passwordRulesContainer = document.getElementById('password-rules-container');
-    if (passwordField && passwordRulesContainer) {
-        const prLength = passwordRulesContainer.querySelector('#pr-length');
-        const prLetter = passwordRulesContainer.querySelector('#pr-letter');
-        const prNumber = passwordRulesContainer.querySelector('#pr-number');
+    setupFieldValidation(
+        '{{ form.password.id_for_label }}', 
+        'password-rules-container', 
+        { length: '#pr-length', letter: '#pr-letter', number: '#pr-number' }, 
+        function validatePassword(field, feedbackDiv, rules) {
+            const value = field.value;
+            let isFieldValidOverall = true;
 
-        passwordField.addEventListener('focus', () => { passwordRulesContainer.style.display = 'block'; validatePassword(); });
-        passwordField.addEventListener('input', validatePassword);
-        // passwordField.addEventListener('blur', () => { if (passwordField.value.length === 0) passwordRulesContainer.style.display = 'none'; });
+            const lengthValid = value.length >= 8;
+            updateValidationRuleUI(rules.length, lengthValid, field);
+            if (!lengthValid && value.length > 0) isFieldValidOverall = false;
 
-        function validatePassword() {
-            const value = passwordField.value;
-            let isFieldValid = true;
+            const letterValid = /[a-zA-Zа-яА-Я]/.test(value);
+            updateValidationRuleUI(rules.letter, letterValid, field);
+            if (!letterValid && value.length > 0) isFieldValidOverall = false;
 
-            updateValidationRuleUI(prLength, value.length >= 8, passwordField);
-            if (!(value.length >= 8) && value.length > 0) isFieldValid = false;
-
-            updateValidationRuleUI(prLetter, /[a-zA-Zа-яА-Я]/.test(value), passwordField);
-            if (!(/[a-zA-Zа-яА-Я]/.test(value)) && value.length > 0) isFieldValid = false;
-
-            updateValidationRuleUI(prNumber, /\d/.test(value), passwordField);
-            if (!(/\d/.test(value)) && value.length > 0) isFieldValid = false;
+            const numberValid = /\d/.test(value);
+            updateValidationRuleUI(rules.number, numberValid, field);
+            if (!numberValid && value.length > 0) isFieldValidOverall = false;
 
             if (value.length > 0) {
-                if (isFieldValid) {
-                    passwordField.classList.add('is-valid');
-                    passwordField.classList.remove('is-invalid');
-                } else {
-                    passwordField.classList.add('is-invalid');
-                    passwordField.classList.remove('is-valid');
-                }
+                field.classList.toggle('is-valid', isFieldValidOverall);
+                field.classList.toggle('is-invalid', !isFieldValidOverall);
             } else {
-                passwordField.classList.remove('is-valid', 'is-invalid');
+                field.classList.remove('is-valid', 'is-invalid');
             }
-        }
-    }
+        },
+        { hideOnValidBlur: false } // Не скрывать password фидбэк, если валидно
+    );
     
-    // --- Валидация для Password2 (совпадение) ---
+    const passwordFieldForP2 = document.getElementById('{{ form.password.id_for_label }}');
     const password2Field = document.getElementById('{{ form.password2.id_for_label }}');
-    const password2FeedbackDiv = document.getElementById('password2-feedback');
-    if (passwordField && password2Field && password2FeedbackDiv) {
-        const p2Match = password2FeedbackDiv.querySelector('#p2-match');
 
-        function validatePassword2Match() {
-            const value1 = passwordField.value;
-            const value2 = password2Field.value;
-            const matchValid = value1 === value2 || value2.length === 0; // Считаем валидным, если пусто или совпадает
-            
-            updateValidationRuleUI(p2Match, matchValid, password2Field, value2.length > 0); // Показать invalid, если не пусто и не совпадает
+    if (passwordFieldForP2 && password2Field) {
+        setupFieldValidation(
+            '{{ form.password2.id_for_label }}', 
+            'password2-feedback', 
+            { match: '#p2-match' },
+            function validatePassword2Match(field, feedbackDiv, rules) {
+                const value1 = passwordFieldForP2.value;
+                const value2 = field.value;
+                const matchValid = value1 === value2 || value2.length === 0;
+                
+                updateValidationRuleUI(rules.match, matchValid, field, value2.length > 0);
 
-            if (value2.length > 0) {
-                 if (matchValid) {
-                    password2Field.classList.add('is-valid');
-                    password2Field.classList.remove('is-invalid');
+                if (value2.length > 0) {
+                    field.classList.toggle('is-valid', matchValid);
+                    field.classList.toggle('is-invalid', !matchValid);
                 } else {
-                    password2Field.classList.add('is-invalid');
-                    password2Field.classList.remove('is-valid');
+                    field.classList.remove('is-valid', 'is-invalid');
                 }
-            } else {
-                 password2Field.classList.remove('is-valid', 'is-invalid');
-            }
-        }
-        
-        password2Field.addEventListener('focus', () => { password2FeedbackDiv.style.display = 'block'; validatePassword2Match(); });
-        password2Field.addEventListener('input', validatePassword2Match);
-        passwordField.addEventListener('input', validatePassword2Match); // Перепроверять password2 при изменении password1
-        // password2Field.addEventListener('blur', () => { if (password2Field.value.length === 0) password2FeedbackDiv.style.display = 'none'; });
-    }
+            },
+            { hideOnValidBlur: true } // Скрывать password2 фидбэк, если валидно и не пусто
+        );
 
+        // Перепроверка password2 при изменении password1
+        passwordFieldForP2.addEventListener('input', () => {
+            const p2Feedback = document.getElementById('password2-feedback');
+            if (password2Field.value.length > 0 || document.activeElement === password2Field) {
+                 if (p2Feedback && p2Feedback.classList.contains('visible')) {
+                    const validateFunc = window.validatePassword2MatchGlob; // Используем глобальную ссылку
+                    if(validateFunc) validateFunc(password2Field, p2Feedback, { match: p2Feedback.querySelector('#p2-match') });
+                 }
+            }
+        });
+        // Сохраняем ссылку на функцию валидации password2 глобально для вызова из другого слушателя
+         window.validatePassword2MatchGlob = function(field, feedbackDiv, rules) {
+            const value1 = passwordFieldForP2.value;
+            const value2 = field.value;
+            const matchValid = value1 === value2 || value2.length === 0;
+            updateValidationRuleUI(rules.match, matchValid, field, value2.length > 0);
+            if (value2.length > 0) {
+                field.classList.toggle('is-valid', matchValid);
+                field.classList.toggle('is-invalid', !matchValid);
+            } else {
+                field.classList.remove('is-valid', 'is-invalid');
+            }
+        };
+    }
 });
 </script>
 {% endblock %}

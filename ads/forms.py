@@ -26,14 +26,10 @@ class AdForm(forms.ModelForm):
 
 
 class ExchangeProposalForm(forms.ModelForm):
-    # ad_sender will be a choice of the current user's ads
-    # ad_receiver will typically be fixed (the ad being viewed)
-
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         if user:
-            # User must have ads to propose an exchange
             self.fields["ad_sender"].queryset = Ad.objects.filter(
                 user=user, is_active=True
             )
@@ -63,47 +59,35 @@ class ExchangeProposalForm(forms.ModelForm):
 class CustomUserCreationForm(UserCreationForm):
     username = UsernameField(
         label=_("Имя пользователя (логин)"),
-        widget=forms.TextInput(attrs={"autofocus": True}),
-        help_text="",
     )
     email = forms.EmailField(
         required=True,
         label=_("Email"),
-        help_text="",
     )
     first_name = forms.CharField(
         max_length=150,
         required=False,
         label=_("Имя"),
-        help_text="",
     )
-    last_name = (
-        forms.CharField(
-            max_length=150,
-            required=False,
-            label=_("Фамилия"),
-            help_text="",
-        ),
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        label=_("Фамилия"),
     )
-    password = forms.CharField(
+    password1 = forms.CharField(
         label=_("Пароль"),
         widget=forms.PasswordInput,
-        help_text="",
         strip=False,
     )
     password2 = forms.CharField(
         label=_("Подтверждение пароля"),
         strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-        help_text="",
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ("username", "email", "first_name", "last_name")
-        labels = {
-            "username": _("Имя пользователя (логин)"),
-        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
