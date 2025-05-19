@@ -13,7 +13,7 @@ urlpatterns = [
     ),
     path(
         "accounts/logout/",
-        auth_views.LogoutView.as_view(next_page="ads:ad_list"),
+        auth_views.LogoutView.as_view(http_method_names=["post", "get", "options"]),
         name="logout",
     ),
     path("accounts/signup/", ads_views.SignUpView.as_view(), name="signup"),
