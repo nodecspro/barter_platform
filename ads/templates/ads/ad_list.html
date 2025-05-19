@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Объявления{% endblock %}
+
+{% block content %}
+<h1>Все объявления</h1>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="q" class="form-control" placeholder="Поиск по названию/описанию..." value="{{ current_query }}">
+    </div>
+    <div class="col-md-3">
+        <select name="category" class="form-select">
+            <option value="">Все категории</option>
+            {% for value, display in categories %}
+            <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="condition" class="form-select">
+            <option value="">Любое состояние</option>
+            {% for value, display in conditions %}
+            <option value="{{ value }}" {% if current_condition == value %}selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Найти</button>
+    </div>
+</form>
+
+{% if ads %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for ad in ads %}
+        <div class="col">
+            <div class="card h-100">
+                {% if ad.image_url %}
+                    <img src="{{ ad.image_url }}" class="card-img-top ad-card-img" alt="{{ ad.title }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200.png?text=No+Image" class="card-img-top ad-card-img" alt="No image available">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title"><a href="{{ ad.get_absolute_url }}">{{ ad.title }}</a></h5>
+                    <p class="card-text"><small class="text-muted">{{ ad.get_category_display }} - {{ ad.get_condition_display }}</small></p>
+                    <p class="card-text">{{ ad.description|truncatewords:20 }}</p>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Автор: {{ ad.user.username }} | {{ ad.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}">Назад</a></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}">Вперед</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <p>Объявлений не найдено.</p>
+{% endif %}
+{% endblock %}

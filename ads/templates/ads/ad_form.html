@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<h1>{{ form_title }}</h1>
+<form method="post" enctype="multipart/form-data"> {# Add enctype if using ImageField #}
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'ads:ad_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ ad.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ ad.title }}</h1>
+        {% if ad.image_url %}
+            <img src="{{ ad.image_url }}" class="img-fluid mb-3" alt="{{ ad.title }}" style="max-height: 400px;">
+        {% endif %}
+        <p><strong>Автор:</strong> {{ ad.user.username }}</p>
+        <p><strong>Категория:</strong> {{ ad.get_category_display }}</p>
+        <p><strong>Состояние:</strong> {{ ad.get_condition_display }}</p>
+        <p><strong>Дата публикации:</strong> {{ ad.created_at|date:"d.m.Y H:i" }}</p>
+        <hr>
+        <h4>Описание:</h4>
+        <p>{{ ad.description|linebreaks }}</p>
+    </div>
+    <div class="col-md-4">
+        {% if user.is_authenticated %}
+            {% if ad.user == user %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-warning">Редактировать</a>
+                    <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-danger">Удалить</a>
+                </div>
+            {% else %}
+                <h4>Предложить обмен</h4>
+                {% if existing_proposals %}
+                    <div class="alert alert-info">
+                        Вы уже отправили {{ existing_proposals.count }} предложение(й) по этому товару.
+                        <ul>
+                        {% for prop in existing_proposals %}
+                            <li>Ваш товар: {{prop.ad_sender.title}} (Статус: {{prop.get_status_display}})</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                {% if proposal_form %}
+                    {% if proposal_form.fields.ad_sender.queryset.exists %}
+                    <form method="post" action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
+                        {% csrf_token %}
+                        {{ proposal_form.as_p }}
+                        <button type="submit" class="btn btn-success">Отправить предложение</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">У вас нет активных объявлений, чтобы предложить обмен.</p>
+                    <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-outline-primary">Создать объявление</a>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% else %}
+            <p><a href="{% url 'login' %}?next={{ request.path }}">Войдите</a>, чтобы предложить обмен.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
