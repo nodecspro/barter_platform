@@ -1,72 +1,212 @@
 {% extends "base.html" %}
-{% block title %}Объявления{% endblock %}
+{% load static %}
+{% load app_tags %}
+
+{% block title %}Все объявления - Бартер Онлайн{% endblock %}
+
+{% block extra_head %}
+<style>
+    .filter-panel {
+        background-color: var(--bs-tertiary-bg); /* Легкий фон для панели фильтров */
+        padding: 1.5rem;
+        border-radius: 0.375rem; /* Bootstrap's rounded */
+        margin-bottom: 2rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075); /* Легкая тень */
+    }
+    .ad-list-card .card-img-top {
+        height: 220px; /* Немного больше высота для списка */
+        object-fit: cover;
+        background-color: var(--bs-secondary-bg);
+    }
+    .ad-list-card .card-title a {
+        color: var(--body-color);
+        text-decoration: none;
+        font-weight: 500; /* Немного жирнее */
+    }
+    .ad-list-card .card-title a:hover {
+        color: var(--link-hover-color);
+    }
+    .ad-list-card .badge {
+        font-size: 0.8em;
+    }
+    .ad-list-card .card-img-top,
+    .ad-list-card .ad-list-card-placeholder { /* Применяем стили и к плейсхолдеру */
+        height: 220px; 
+        object-fit: cover; /* Для <img> */
+        background-color: var(--bs-secondary-bg); /* Фон для плейсхолдера, если это div */
+        display: flex; /* Для div-плейсхолдера, чтобы центрировать содержимое */
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ad-list-card .card-img-top-wrapper {
+        height: 220px;
+        background-color: var(--bs-tertiary-bg);
+        display: block;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ad-list-card .card-img-top-wrapper img.card-img-top { /* Стили для самого <img> */
+        display: block; /* Важно, чтобы img вел себя как блок */
+        width: 100%;
+        height: 100%; /* Растягиваем на всю высоту родителя */
+        object-fit: cover;
+        /* background-color убираем отсюда, он на wrapper */
+    }
+
+    .ad-list-card .ad-list-card-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex; /* <--- Ключевое свойство для центрирования СОДЕРЖИМОГО плейсхолдера */
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        color: var(--bs-secondary-color);
+        /* background-color убираем отсюда, он на wrapper, если плейсхолдер занимает всю область */
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>Все объявления</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">Все объявления</h1>
 
-<form method="get" class="row g-3 mb-4">
-    <div class="col-md-4">
-        <input type="text" name="q" class="form-control" placeholder="Поиск по названию/описанию..." value="{{ current_query }}">
+    <!-- Панель фильтров -->
+    <div class="filter-panel">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5 col-lg-4">
+                <label for="id_q" class="form-label visually-hidden">Поиск</label>
+                <input type="text" name="q" id="id_q" class="form-control form-control-lg" placeholder="Поиск по названию/описанию..." value="{{ current_query }}">
+            </div>
+            <div class="col-md-3 col-lg-3">
+                <label for="id_category" class="form-label visually-hidden">Категория</label>
+                <select name="category" id="id_category" class="form-select form-select-lg">
+                    <option value="">Все категории</option>
+                    {% for value, display in categories %}
+                    <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 col-lg-3">
+                <label for="id_condition" class="form-label visually-hidden">Состояние</label>
+                <select name="condition" id="id_condition" class="form-select form-select-lg">
+                    <option value="">Любое состояние</option>
+                    {% for value, display in conditions %}
+                    <option value="{{ value }}" {% if current_condition == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 col-lg-2 d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search d-md-none"></i> {# Иконка для мобильных #}
+                    <span class="d-none d-md-inline">Найти</span> {# Текст для больших экранов #}
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="col-md-3">
-        <select name="category" class="form-select">
-            <option value="">Все категории</option>
-            {% for value, display in categories %}
-            <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>{{ display }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select name="condition" class="form-select">
-            <option value="">Любое состояние</option>
-            {% for value, display in conditions %}
-            <option value="{{ value }}" {% if current_condition == value %}selected{% endif %}>{{ display }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Найти</button>
-    </div>
-</form>
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-{% if ads %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for ad in ads %}
-        <div class="col">
-            <div class="card h-100">
-                {% if ad.image_url %}  {# Проверяем, есть ли URL изображения #}
-                    <img src="{{ ad.image_url }}" class="card-img-top ad-card-img" alt="{{ ad.title }}">
-                {% else %}
-                    {# <div class="card-img-top ad-card-img-placeholder"></div> #}
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title"><a href="{{ ad.get_absolute_url }}">{{ ad.title }}</a></h5>
-                    <p class="card-text"><small class="text-muted">{{ ad.get_category_display }} - {{ ad.get_condition_display }}</small></p>
-                    <p class="card-text">{{ ad.description|truncatewords:20 }}</p>
-                </div>
-                <div class="card-footer">
-                    <small class="text-muted">Автор: {{ ad.user.username }} | {{ ad.created_at|date:"d.m.Y H:i" }}</small>
+    {% if ads %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for ad in ads %}
+            <div class="col">
+                <div class="card h-100 shadow-sm ad-list-card">
+                    <a href="{{ ad.get_absolute_url }}">
+                        <div class="card-img-top-wrapper">
+                            {% if ad.image_url %}
+                                <img src="{{ ad.image_url }}" 
+                                    class="card-img-top" 
+                                    alt="{{ ad.title }}"
+                                    id="adImage_{{ ad.pk }}" {# Уникальный ID для каждого изображения #}
+                                    onerror="this.style.display='none'; document.getElementById('adPlaceholder_{{ ad.pk }}').style.display='flex';"
+                                    loading="lazy"> {# Ленивая загрузка изображений #}
+                                <div id="adPlaceholder_{{ ad.pk }}" 
+                                    class="card-img-top d-flex align-items-center justify-content-center ad-list-card-placeholder" 
+                                    style="display: none; flex-direction: column; text-align: center;" 
+                                    role="img" aria-label="Ошибка загрузки изображения">
+                                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 2.5rem; color: var(--bs-warning);"></i>
+                                    <span class="mt-1 small text-muted">Ошибка</span> {# Короткое сообщение #}
+                                </div>
+                            {% else %}
+                                <div class="card-img-top d-flex align-items-center justify-content-center" role="img" aria-label="Нет изображения">
+                                    <i class="bi bi-image-alt" style="font-size: 4rem; color: var(--bs-secondary-color);"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-1">
+                            <a href="{{ ad.get_absolute_url }}">{{ ad.title|truncatechars:60 }}</a>
+                        </h5>
+                        <div class="mb-2">
+                            <span class="badge rounded-pill text-bg-secondary me-1">{{ ad.get_category_display }}</span>
+                            <span class="badge rounded-pill text-bg-info text-dark">{{ ad.get_condition_display }}</span>
+                             {# text-dark для лучшей читаемости на светлом бейдже info #}
+                        </div>
+                        <p class="card-text small flex-grow-1">{{ ad.description|truncatewords:25 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 pb-3">
+                        <small class="text-muted">Автор: {{ ad.user.username }}</small><br>
+                        <small class="text-muted">Опубликовано: {{ ad.created_at|date:"d.m.Y" }}</small>
+                        <a href="{{ ad.get_absolute_url }}" class="btn btn-sm btn-outline-primary float-end">Подробнее</a>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    {% if is_paginated %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}">Назад</a></li>
-            {% endif %}
-            <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
-            {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.condition %}&condition={{ request.GET.condition }}{% endif %}">Вперед</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
+            <ul class="pagination">
+                {% comment %} Сохраняем текущие GET-параметры, исключая 'page' {% endcomment %}
+                {% get_current_page_params request as current_params %}
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1{{ current_params }}">« <span class="d-none d-sm-inline">Первая</span></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ current_params }}">Пред.</a></li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">« <span class="d-none d-sm-inline">Первая</span></span></li>
+                    <li class="page-item disabled"><span class="page-link">Пред.</span></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{{ current_params }}">{{ num }}</a></li>
+                    {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                         <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{{ current_params }}">След.</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{{ current_params }}"><span class="d-none d-sm-inline">Последняя</span> »</a></li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">След.</span></li>
+                    <li class="page-item disabled"><span class="page-link"><span class="d-none d-sm-inline">Последняя</span> »</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi- binoculars" style="font-size: 4rem; color: var(--bs-secondary-color);"></i> {# Иконка бинокля #}
+            <h3 class="mt-3">Объявлений не найдено</h3>
+            <p class="text-muted">Попробуйте изменить параметры поиска или <a href="{% url 'ads:ad_list' %}">сбросить фильтры</a>.</p>
+            <p class="text-muted">Или <a href="{% url 'ads:ad_create' %}">создайте свое объявление</a>!</p>
+        </div>
     {% endif %}
-{% else %}
-    <p>Объявлений не найдено.</p>
-{% endif %}
+</div>
 {% endblock %}

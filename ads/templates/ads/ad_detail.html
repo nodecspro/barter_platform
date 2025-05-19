@@ -62,9 +62,18 @@
         <!-- Левая колонка: Изображение -->
         <div class="col-lg-7">
             {% if ad.image_url %}
-                <img src="{{ ad.image_url }}" class="ad-detail-image shadow-sm" alt="{{ ad.title }}">
+                <img src="{{ ad.image_url }}" 
+                    class="ad-detail-image shadow-sm" 
+                    alt="{{ ad.title }}"
+                    id="adMainImage" 
+                    onerror="this.style.display='none'; document.getElementById('adImagePlaceholder').style.display='flex';"> 
+                    {# При ошибке скрываем img и показываем плейсхолдер #}
+                <div id="adImagePlaceholder" class="ad-detail-no-image shadow-sm" style="display: none;"> {# Изначально скрыт, если есть img #}
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: var(--bs-warning);"></i>
+                    <span class="ms-3">Не удалось загрузить изображение</span>
+                </div>
             {% else %}
-                <div class="ad-detail-no-image shadow-sm">
+                <div class="ad-detail-no-image shadow-sm" id="adImagePlaceholder">
                     <i class="bi bi-image-alt" style="font-size: 5rem;"></i>
                 </div>
             {% endif %}
