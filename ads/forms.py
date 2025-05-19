@@ -1,5 +1,8 @@
-# ads/forms.py
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import (
+    User,
+)
 from .models import Ad, ExchangeProposal
 
 
@@ -56,3 +59,32 @@ class ExchangeProposalForm(forms.ModelForm):
             "ad_sender": "Ваш товар для обмена",
             "comment": "Комментарий (опционально)",
         }
+
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(
+        required=True,
+        help_text="Обязательное поле. Используется для восстановления пароля.",
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = UserCreationForm.Meta.fields + (
+            "email",
+            "first_name",
+            "last_name",
+        )  # Add email, first_name, last_name
+        # You can customize labels here if needed
+        labels = {
+            "username": "Имя пользователя (логин)",
+            "first_name": "Имя",
+            "last_name": "Фамилия",
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        # You can add more custom logic here if needed before saving
+        if commit:
+            user.save()
+        return user

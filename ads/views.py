@@ -29,6 +29,8 @@ from .permissions import (
     IsReceiverOfAdForProposal,
 )
 
+from .forms import AdForm, ExchangeProposalForm, CustomUserCreationForm
+
 # --- HTML Views (Django CBV) ---
 
 
@@ -412,3 +414,24 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "Предложение отменено."}, status=status.HTTP_204_NO_CONTENT
         )
+
+
+class SignUpView(CreateView):
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy(
+        "login"
+    )  # Or 'ads:ad_list' if you want to redirect to main page
+    template_name = "registration/signup.html"
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        user = form.save()
+        # Optional: Log the user in directly after registration
+        # login(self.request, user)
+        # messages.success(self.request, "Регистрация прошла успешно! Теперь вы можете войти.")
+        # If not logging in directly, send a success message for the login page.
+        messages.success(
+            self.request, "Регистрация прошла успешно! Пожалуйста, войдите."
+        )
+        return super().form_valid(form)  # This will redirect to success_url
