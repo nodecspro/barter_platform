@@ -1,3 +1,4 @@
+from django import forms
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -88,7 +89,6 @@ class AdCreateView(LoginRequiredMixin, CreateView):
     template_name = "ads/ad_form.html"
 
     def form_valid(self, form):
-        user = form.save()
         form.instance.user = self.request.user
         messages.success(self.request, "Объявление успешно создано!")
         return super().form_valid(form)
@@ -122,17 +122,13 @@ class AdDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Ad
     template_name = "ads/ad_confirm_delete.html"
     success_url = reverse_lazy("ads:my_ads")  # Redirect to user's ads list
+    context_object_name = "object"
 
     def test_func(self):
         ad = self.get_object()
         return self.request.user == ad.user
 
     def form_valid(self, form):
-        # Instead of full delete, maybe soft delete?
-        # self.object.is_active = False
-        # self.object.save()
-        # messages.success(self.request, "Объявление было удалено (деактивировано).")
-        # return redirect(self.success_url)
         messages.success(self.request, "Объявление успешно удалено!")
         return super().form_valid(form)
 

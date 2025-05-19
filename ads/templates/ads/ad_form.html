@@ -1,8 +1,254 @@
-{% extends "base.html" %} {% block title %}{{ form_title }}{% endblock %} {% block content %}
-<h1>{{ form_title }}</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %} {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Сохранить</button>
-    <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'ads:ad_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
-</form>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ form_title|default:"Форма объявления" }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    .ad-form-container {
+        max-width: 700px; margin-top: 2rem; margin-bottom: 3rem; padding: 2rem;
+        background-color: var(--container-box-bg); border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    .ad-form-container h1 { margin-bottom: 1.5rem; text-align: center; }
+
+    /* Стили для form-floating */
+    .form-floating { position: relative; }
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px); line-height: 1.25;
+        padding-top: 1.625rem; padding-bottom: 0.625rem;
+    }
+    .form-floating > textarea.form-control {
+        min-height: calc(3.5rem + 2px); /* Для textarea */
+        /* height: auto; /* или заданная через rows в forms.py */
+    }
+    .form-floating > label {
+        position: absolute; top: 0; left: 0; height: 100%; padding: 1rem 0.75rem;
+        pointer-events: none; border: 1px solid transparent; transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: var(--form-floating-label-color);
+    }
+    .form-floating > textarea.form-control ~ label { height: auto; }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label {
+        opacity: 0.65; transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    .form-control:focus {
+        border-color: #86b7fe; outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Стили для Bootstrap is-valid / is-invalid с иконками */
+    /* Стандартные (для полей без кнопки глаза) */
+    .form-control.is-valid, .was-validated .form-control:valid {
+        border-color: #198754 !important;
+        padding-right: calc(1.5em + .75rem) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4M3.7 6.73L1.3 4.53c-.4-1.04.46-1.4M7.4 1.23L4.1 5.83c-.4 1.04.46 1.4'%3e%3c/path%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right calc(.375em + .1875rem) center !important;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
+    }
+    .form-control.is-valid:focus { box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25) !important; }
+
+    .form-control.is-invalid, .was-validated .form-control:invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + .75rem) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right calc(.375em + .1875rem) center !important;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
+    }
+    .form-control.is-invalid:focus { box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25) !important; }
+
+    /* Для полей select нет иконок is-valid/is-invalid по умолчанию в Bootstrap, но рамка будет */
+    .form-select.is-valid, .was-validated .form-select:valid { border-color: #198754 !important; }
+    .form-select.is-valid:focus { border-color: #198754 !important; box-shadow: 0 0 0 .25rem rgba(25,135,84,.25) !important; }
+    .form-select.is-invalid, .was-validated .form-select:invalid { border-color: #dc3545 !important; }
+    .form-select.is-invalid:focus { border-color: #dc3545 !important; box-shadow: 0 0 0 .25rem rgba(220,53,69,.25) !important; }
+
+    /* Для help_text и ошибок Django */
+    .form-field-help { font-size: 0.875em; margin-top: 0.25rem; padding-left: 0.5rem; color: var(--text-muted-color); }
+    .django-error.invalid-feedback { /* уже d-block */ font-size: 0.875em; padding-left: 0.5rem; }
+    .django-error.invalid-feedback ul { list-style: none; padding: 0; margin: 0; }
+    .custom-error-message { color: #dc3545; font-size: 0.875em; margin-top: 0.25rem; display: none; padding-left: 0.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container ad-form-container">
+    <h1>{{ form_title|default:"Создать/Редактировать объявление" }}</h1>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3" role="alert">
+            {% for error in form.non_field_errors %} <p class="mb-0">{{ error }}</p> {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="adForm" class="mt-3" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="mb-3 field-wrapper">
+                <div class="form-floating field-container-{{ field.name }}" data-field-name="{{ field.name }}">
+                    {{ field }}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block django-error">
+                            {% for error in field.errors %} {{ error }} {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="custom-error-message" id="{{ field.id_for_label }}-js-error"></div>
+                </div>
+
+                {% if field.help_text %}
+                    <div class="form-field-help form-text">
+                        {{ field.help_text|safe }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+                {% if object %}Сохранить изменения{% else %}Опубликовать объявление{% endif %}
+            </button>
+            <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'ads:ad_list' %}{% endif %}" class="btn btn-outline-secondary">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('adForm');
+    if (!form) return;
+
+    const formElements = Array.from(form.querySelectorAll('.form-floating > input:not([type="hidden"]), .form-floating > select, .form-floating > textarea'));
+
+    formElements.forEach(function(el) {
+        if (el.tagName.toLowerCase() === 'select') {
+            if (!el.classList.contains('form-select')) el.classList.add('form-select');
+        } else {
+            if (!el.classList.contains('form-control')) el.classList.add('form-control');
+        }
+
+        if (el.tagName.toLowerCase() !== 'select' && el.value === '' && !el.hasAttribute('placeholder') && (['text', 'email', 'password', 'url', 'number'].includes(el.type) || el.tagName.toLowerCase() === 'textarea')) {
+            el.setAttribute('placeholder', ' ');
+        }
+        
+        const fieldContainer = el.closest('.field-container-' + el.name); // Используем уникальный класс
+        if (!fieldContainer) return; // Добавил проверку
+
+        const djangoErrorDiv = fieldContainer.querySelector('.django-error');
+        const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
+
+        const eventType = (el.tagName.toLowerCase() === 'select' || el.type === 'checkbox' || el.type === 'radio') ? 'change' : 'input';
+        
+        el.addEventListener(eventType, function() {
+            if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null && djangoErrorDiv.textContent.toLowerCase().includes('this field is required')) {
+                djangoErrorDiv.style.display = 'none';
+            }
+            if (jsErrorDiv && jsErrorDiv.offsetParent !== null && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+                hideJsError(jsErrorDiv);
+            }
+            updateAdFieldOverallValidity(el);
+        });
+
+        el.addEventListener('blur', function() {
+            const isRequired = el.hasAttribute('required') || el.required;
+            let isEmpty;
+            if (el.tagName.toLowerCase() === 'select') {
+                isEmpty = el.value === '';
+            } else {
+                isEmpty = el.value.trim() === '';
+            }
+
+            if (isEmpty && isRequired) {
+                showJsError(jsErrorDiv, 'Это поле обязательно для заполнения.');
+                el.classList.add('is-invalid'); el.classList.remove('is-valid');
+                if (djangoErrorDiv) djangoErrorDiv.style.display = 'none';
+            } else {
+                if (jsErrorDiv && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения')) {
+                    hideJsError(jsErrorDiv);
+                }
+            }
+            updateAdFieldOverallValidity(el);
+        });
+
+        if (djangoErrorDiv && djangoErrorDiv.offsetParent !== null) {
+            el.classList.add('is-invalid');
+        }
+    });
+
+    function updateAdFieldOverallValidity(fieldElement) {
+        const fieldContainer = fieldElement.closest('.field-container-' + fieldElement.name);
+        if (!fieldContainer) return;
+
+        const djangoErrorDiv = fieldContainer.querySelector('.django-error');
+        const jsErrorDiv = fieldContainer.querySelector('.custom-error-message');
+        const isRequired = fieldElement.hasAttribute('required') || fieldElement.required;
+        
+        let isFieldValidByJs = true; // По умолчанию считаем поле валидным по JS
+        const fieldValue = fieldElement.value; // Не тримим для select, для text тримим при проверке
+
+        if (fieldElement.name === 'image_url' && fieldValue.trim() !== '') {
+            try {
+                new URL(fieldValue); // Попытка создать URL
+                if (jsErrorDiv && jsErrorDiv.textContent.includes('Некорректный формат URL')) hideJsError(jsErrorDiv);
+            } catch (_) {
+                isFieldValidByJs = false;
+                showJsError(jsErrorDiv, 'Некорректный формат URL.');
+            }
+        } else if (fieldElement.name === 'image_url' && fieldValue.trim() === '') {
+            // Если image_url не обязательный и пустой, он валиден (убираем ошибку формата)
+            if (jsErrorDiv && jsErrorDiv.textContent.includes('Некорректный формат URL')) hideJsError(jsErrorDiv);
+        }
+        // Добавьте другие специфичные JS валидации здесь, если нужно
+        // if (fieldElement.name === 'title' && fieldValue.trim() !== '' && fieldValue.trim().length < 3) {
+        //     isFieldValidByJs = false;
+        //     showJsError(jsErrorDiv, 'Заголовок слишком короткий.');
+        // } else if (fieldElement.name === 'title' && jsErrorDiv && jsErrorDiv.textContent.includes('Заголовок слишком короткий')) {
+        //     hideJsError(jsErrorDiv);
+        // }
+
+
+        const djangoErrorIsVisible = djangoErrorDiv && djangoErrorDiv.offsetParent !== null;
+        const jsSpecificErrorIsVisible = jsErrorDiv && jsErrorDiv.offsetParent !== null && !jsErrorDiv.textContent.includes('Это поле обязательно для заполнения');
+        const jsRequiredErrorIsVisible = jsErrorDiv && jsErrorDiv.offsetParent !== null && jsErrorDiv.textContent.includes('Это поле обязательно для заполнения');
+
+        let currentValueIsEmpty;
+        if (fieldElement.tagName.toLowerCase() === 'select') {
+            currentValueIsEmpty = fieldValue === '';
+        } else {
+            currentValueIsEmpty = fieldValue.trim() === '';
+        }
+
+        if (currentValueIsEmpty && isRequired) {
+            fieldElement.classList.add('is-invalid');
+            fieldElement.classList.remove('is-valid');
+        } else if (isFieldValidByJs && !djangoErrorIsVisible && !jsSpecificErrorIsVisible && !jsRequiredErrorIsVisible) {
+            fieldElement.classList.remove('is-invalid');
+            if (!currentValueIsEmpty || (!isRequired && currentValueIsEmpty)) {
+                 fieldElement.classList.add('is-valid');
+            } else {
+                 fieldElement.classList.remove('is-valid');
+            }
+        } else { 
+            fieldElement.classList.add('is-invalid');
+            fieldElement.classList.remove('is-valid');
+        }
+    }
+    
+    function showJsError(errorDiv, message) { if (!errorDiv) return; errorDiv.textContent = message; errorDiv.style.display = 'block'; }
+    function hideJsError(errorDiv) { if (!errorDiv) return; errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+
+});
+</script>
 {% endblock %}
