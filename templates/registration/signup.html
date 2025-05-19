@@ -1,15 +1,333 @@
-{% extends "base.html" %} {% block title %}Регистрация{% endblock %} {% block
-content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Регистрация - Бартер Онлайн{% endblock %}
+
+{% block extra_head %}
+<style>
+    .signup-container { max-width: 550px; margin-top: 2rem; margin-bottom: 3rem; padding: 2rem; background-color: #fff; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); }
+    .signup-container h2 { margin-bottom: 1.5rem; text-align: center; color: #343a40; }
+
+    /* Стили для form-floating (предполагается, что они уже есть или взяты из Bootstrap) */
+    .form-floating > .form-control, .form-floating > .form-select { height: calc(3.5rem + 2px); line-height: 1.25; padding-top: 1.625rem; padding-bottom: 0.625rem; }
+    .form-floating > label { position: absolute; top: 0; left: 0; height: 100%; padding: 1rem 0.75rem; pointer-events: none; border: 1px solid transparent; transform-origin: 0 0; transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out; color: #6c757d; }
+    .form-floating > .form-control:focus ~ label, .form-floating > .form-control:not(:placeholder-shown) ~ label, .form-floating > .form-select ~ label { opacity: 0.65; transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem); }
+    .form-control:focus { border-color: #86b7fe; outline: 0; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+    
+    /* Стили для динамических подсказок валидации */
+    .field-validation-feedback {
+        font-size: 0.875em;
+        padding-left: 0.5rem;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+        display: none; /* Изначально скрыт */
+    }
+    .field-validation-feedback ul { list-style: none; padding: 0; margin: 0; }
+    .field-validation-feedback li {
+        margin-bottom: 0.3rem;
+        transition: color 0.3s ease, opacity 0.3s ease;
+        color: #6c757d; /* Изначальный цвет (серый, не проверено/не выполнено) */
+        opacity: 0.8;
+        position: relative;
+        padding-left: 1.2em;
+    }
+    .field-validation-feedback li::before { font-family: 'Courier New', Courier, monospace; position: absolute; left: 0; }
+    .field-validation-feedback li.valid { color: #198754; opacity: 1; }
+    .field-validation-feedback li.valid::before { content: "✓"; color: #198754; }
+    .field-validation-feedback li.invalid { color: #dc3545; opacity: 1; }
+    .field-validation-feedback li.invalid::before { content: "✗"; color: #dc3545; }
+
+    /* Убираем стандартный Bootstrap invalid-feedback, если используем свой */
+    .form-floating > .invalid-feedback { display: none !important; } 
+    /* Показываем его только если наш JS его не обработал */
+    .form-floating.was-validated > .invalid-feedback { display: block !important; }
+
+
+    /* Стили для password-requirements остаются такими же, как в предыдущем ответе */
+    .password-requirements { font-size: 0.875em; padding-left: 0.5rem; margin-top: 0.5rem; margin-bottom: 1rem; display: none; }
+    .password-requirements ul { list-style: none; padding: 0; margin: 0; }
+    .password-requirements li { margin-bottom: 0.3rem; transition: color 0.3s ease, opacity 0.3s ease; color: #6c757d; opacity: 0.7; position: relative; padding-left: 1.2em; }
+    .password-requirements li::before { font-family: 'Courier New', Courier, monospace; position: absolute; left: 0; }
+    .password-requirements li.valid { color: #198754; opacity: 1; }
+    .password-requirements li.valid::before { content: "✓"; color: #198754; }
+    .password-requirements li.invalid { color: #dc3545; opacity: 1; }
+    .password-requirements li.invalid::before { content: "✗"; color: #dc3545; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container signup-container">
     <h2>Регистрация нового пользователя</h2>
-    <form method="post">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit" class="btn btn-primary mt-3">
-        Зарегистрироваться
-      </button>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3" role="alert">
+            {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" class="mt-3" novalidate> {# novalidate отключает стандартную HTML5 валидацию браузера #}
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-floating mb-2">
+                {{ field }}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                
+                {# Стандартные ошибки Django, если наша JS валидация их не перехватила или для других полей #}
+                {% if field.errors %}
+                    <div class="invalid-feedback d-block server-error">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Динамический блок для валидации username #}
+            {% if field.name == 'username' %}
+            <div id="username-feedback" class="field-validation-feedback mb-3">
+                <p class="mb-1 small text-muted">Имя пользователя должно:</p>
+                <ul>
+                    <li id="un-length">Быть от 3 до 150 символов.</li>
+                    <li id="un-chars">Содержать только буквы, цифры и @/./+/-/_.</li>
+                    {# <li id="un-unique">Быть уникальным (проверка позже, если AJAX).</li> #}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Динамический блок для валидации email #}
+            {% if field.name == 'email' %}
+            <div id="email-feedback" class="field-validation-feedback mb-3">
+                <p class="mb-1 small text-muted">Email должен:</p>
+                <ul>
+                    <li id="em-format">Иметь корректный формат (например, user@example.com).</li>
+                    {# <li id="em-unique">Быть уникальным (проверка позже, если AJAX).</li> #}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Динамический блок для требований к паролю (остается как есть) #}
+            {% if field.name == 'password' %}
+            <div id="password-rules-container" class="password-requirements mb-3">
+                <p class="mb-1 small text-muted">Пароль должен:</p>
+                <ul>
+                    <li id="pr-length">Содержать не менее 8 символов.</li>
+                    <li id="pr-letter">Содержать хотя бы одну букву.</li>
+                    <li id="pr-number">Содержать хотя бы одну цифру.</li>
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Для password2 можно добавить проверку на совпадение с password1 #}
+             {% if field.name == 'password2' %}
+            <div id="password2-feedback" class="field-validation-feedback mb-3">
+                <ul>
+                    <li id="p2-match">Пароли должны совпадать.</li>
+                </ul>
+            </div>
+            {% endif %}
+
+        {% endfor %}
+        
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Зарегистрироваться</button>
+        </div>
     </form>
-    <p class="mt-3">Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
-  </div>
+
+    <div class="mt-4 text-center">
+        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавление классов form-control/form-select и placeholder
+    const formElements = document.querySelectorAll('.signup-container form .form-floating > input, .signup-container form .form-floating > select, .signup-container form .form-floating > textarea');
+    formElements.forEach(function(el) {
+        if (!el.classList.contains('form-control') && el.tagName.toLowerCase() !== 'select') {
+            el.classList.add('form-control');
+        }
+        if (el.tagName.toLowerCase() === 'select' && !el.classList.contains('form-select')) {
+            el.classList.add('form-select');
+        }
+        if (!el.hasAttribute('placeholder') && (el.type === 'text' || el.type === 'email' || el.type === 'password' || el.tagName.toLowerCase() === 'textarea')) {
+            el.setAttribute('placeholder', ' ');
+        }
+        // Скрываем стандартные серверные ошибки, если есть наш блок для JS валидации
+        const fieldName = el.name;
+        const feedbackDiv = document.getElementById(fieldName + '-feedback') || (fieldName === 'password' ? document.getElementById('password-rules-container') : null);
+        const serverErrorDiv = el.closest('.form-floating').querySelector('.server-error');
+        if (feedbackDiv && serverErrorDiv) {
+            // serverErrorDiv.style.display = 'none'; // Скрываем, если будем показывать ошибки в нашем блоке
+        } else if (serverErrorDiv) {
+            el.classList.add('is-invalid'); // Показываем is-invalid для серверных ошибок, если нет JS блока
+        }
+
+    });
+
+    // --- Общая функция для обновления статуса правила валидации ---
+    function updateValidationRuleUI(ruleElement, isValid, fieldElement, markInvalidIfNotEmpty = true) {
+        if (isValid) {
+            ruleElement.classList.add('valid');
+            ruleElement.classList.remove('invalid');
+        } else {
+            ruleElement.classList.remove('valid');
+            if (markInvalidIfNotEmpty && fieldElement.value.length > 0) {
+                ruleElement.classList.add('invalid');
+            } else {
+                ruleElement.classList.remove('invalid');
+            }
+        }
+    }
+    
+    // --- Валидация для Username ---
+    const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+    const usernameFeedbackDiv = document.getElementById('username-feedback');
+    if (usernameField && usernameFeedbackDiv) {
+        const unLength = usernameFeedbackDiv.querySelector('#un-length');
+        const unChars = usernameFeedbackDiv.querySelector('#un-chars');
+
+        usernameField.addEventListener('focus', () => { usernameFeedbackDiv.style.display = 'block'; validateUsername(); });
+        usernameField.addEventListener('input', validateUsername);
+        // usernameField.addEventListener('blur', () => { if (usernameField.value.length === 0) usernameFeedbackDiv.style.display = 'none'; });
+
+
+        function validateUsername() {
+            const value = usernameField.value;
+            let isFieldValid = true;
+
+            // Длина
+            const lengthValid = value.length >= 3 && value.length <= 150;
+            updateValidationRuleUI(unLength, lengthValid, usernameField);
+            if (!lengthValid && value.length > 0) isFieldValid = false;
+
+            // Символы (Django's UsernameValidator: letters, digits and @/./+/-/_ only)
+            const charsValid = /^[a-zA-Z0-9@.+_-]+$/.test(value) || value.length === 0;
+            updateValidationRuleUI(unChars, charsValid, usernameField);
+            if (!charsValid && value.length > 0) isFieldValid = false;
+            
+            // Обновление класса is-valid/is-invalid для поля
+            if (value.length > 0) {
+                if (isFieldValid) {
+                    usernameField.classList.add('is-valid');
+                    usernameField.classList.remove('is-invalid');
+                } else {
+                    usernameField.classList.add('is-invalid');
+                    usernameField.classList.remove('is-valid');
+                }
+            } else {
+                usernameField.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+    }
+
+    // --- Валидация для Email ---
+    const emailField = document.getElementById('{{ form.email.id_for_label }}');
+    const emailFeedbackDiv = document.getElementById('email-feedback');
+    if (emailField && emailFeedbackDiv) {
+        const emFormat = emailFeedbackDiv.querySelector('#em-format');
+
+        emailField.addEventListener('focus', () => { emailFeedbackDiv.style.display = 'block'; validateEmail(); });
+        emailField.addEventListener('input', validateEmail);
+        // emailField.addEventListener('blur', () => { if (emailField.value.length === 0) emailFeedbackDiv.style.display = 'none'; });
+
+        function validateEmail() {
+            const value = emailField.value;
+            let isFieldValid = true;
+            // Простой regex для формата email. Django EmailValidator сложнее.
+            const formatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value.length === 0;
+            updateValidationRuleUI(emFormat, formatValid, emailField);
+            if (!formatValid && value.length > 0) isFieldValid = false;
+
+            if (value.length > 0) {
+                if (isFieldValid) {
+                    emailField.classList.add('is-valid');
+                    emailField.classList.remove('is-invalid');
+                } else {
+                    emailField.classList.add('is-invalid');
+                    emailField.classList.remove('is-valid');
+                }
+            } else {
+                emailField.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+    }
+
+    // --- Валидация для Password (остается как есть) ---
+    const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+    const passwordRulesContainer = document.getElementById('password-rules-container');
+    if (passwordField && passwordRulesContainer) {
+        const prLength = passwordRulesContainer.querySelector('#pr-length');
+        const prLetter = passwordRulesContainer.querySelector('#pr-letter');
+        const prNumber = passwordRulesContainer.querySelector('#pr-number');
+
+        passwordField.addEventListener('focus', () => { passwordRulesContainer.style.display = 'block'; validatePassword(); });
+        passwordField.addEventListener('input', validatePassword);
+        // passwordField.addEventListener('blur', () => { if (passwordField.value.length === 0) passwordRulesContainer.style.display = 'none'; });
+
+        function validatePassword() {
+            const value = passwordField.value;
+            let isFieldValid = true;
+
+            updateValidationRuleUI(prLength, value.length >= 8, passwordField);
+            if (!(value.length >= 8) && value.length > 0) isFieldValid = false;
+
+            updateValidationRuleUI(prLetter, /[a-zA-Zа-яА-Я]/.test(value), passwordField);
+            if (!(/[a-zA-Zа-яА-Я]/.test(value)) && value.length > 0) isFieldValid = false;
+
+            updateValidationRuleUI(prNumber, /\d/.test(value), passwordField);
+            if (!(/\d/.test(value)) && value.length > 0) isFieldValid = false;
+
+            if (value.length > 0) {
+                if (isFieldValid) {
+                    passwordField.classList.add('is-valid');
+                    passwordField.classList.remove('is-invalid');
+                } else {
+                    passwordField.classList.add('is-invalid');
+                    passwordField.classList.remove('is-valid');
+                }
+            } else {
+                passwordField.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+    }
+    
+    // --- Валидация для Password2 (совпадение) ---
+    const password2Field = document.getElementById('{{ form.password2.id_for_label }}');
+    const password2FeedbackDiv = document.getElementById('password2-feedback');
+    if (passwordField && password2Field && password2FeedbackDiv) {
+        const p2Match = password2FeedbackDiv.querySelector('#p2-match');
+
+        function validatePassword2Match() {
+            const value1 = passwordField.value;
+            const value2 = password2Field.value;
+            const matchValid = value1 === value2 || value2.length === 0; // Считаем валидным, если пусто или совпадает
+            
+            updateValidationRuleUI(p2Match, matchValid, password2Field, value2.length > 0); // Показать invalid, если не пусто и не совпадает
+
+            if (value2.length > 0) {
+                 if (matchValid) {
+                    password2Field.classList.add('is-valid');
+                    password2Field.classList.remove('is-invalid');
+                } else {
+                    password2Field.classList.add('is-invalid');
+                    password2Field.classList.remove('is-valid');
+                }
+            } else {
+                 password2Field.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+        
+        password2Field.addEventListener('focus', () => { password2FeedbackDiv.style.display = 'block'; validatePassword2Match(); });
+        password2Field.addEventListener('input', validatePassword2Match);
+        passwordField.addEventListener('input', validatePassword2Match); // Перепроверять password2 при изменении password1
+        // password2Field.addEventListener('blur', () => { if (password2Field.value.length === 0) password2FeedbackDiv.style.display = 'none'; });
+    }
+
+});
+</script>
 {% endblock %}

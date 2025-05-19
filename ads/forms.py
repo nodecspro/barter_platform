@@ -1,8 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import (
-    User,
-)
+from django.contrib.auth.forms import UserCreationForm, UsernameField
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 from .models import Ad, ExchangeProposal
 
 
@@ -62,29 +61,53 @@ class ExchangeProposalForm(forms.ModelForm):
 
 
 class CustomUserCreationForm(UserCreationForm):
+    username = UsernameField(
+        label=_("Имя пользователя (логин)"),
+        widget=forms.TextInput(attrs={"autofocus": True}),
+        help_text="",
+    )
     email = forms.EmailField(
         required=True,
-        help_text="Обязательное поле. Используется для восстановления пароля.",
+        label=_("Email"),
+        help_text="",
+    )
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        label=_("Имя"),
+        help_text="",
+    )
+    last_name = (
+        forms.CharField(
+            max_length=150,
+            required=False,
+            label=_("Фамилия"),
+            help_text="",
+        ),
+    )
+    password = forms.CharField(
+        label=_("Пароль"),
+        widget=forms.PasswordInput,
+        help_text="",
+        strip=False,
+    )
+    password2 = forms.CharField(
+        label=_("Подтверждение пароля"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        help_text="",
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = UserCreationForm.Meta.fields + (
-            "email",
-            "first_name",
-            "last_name",
-        )  # Add email, first_name, last_name
-        # You can customize labels here if needed
+        fields = ("username", "email", "first_name", "last_name")
         labels = {
-            "username": "Имя пользователя (логин)",
-            "first_name": "Имя",
-            "last_name": "Фамилия",
+            "username": _("Имя пользователя (логин)"),
         }
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
-        # You can add more custom logic here if needed before saving
         if commit:
             user.save()
         return user
