@@ -32,15 +32,6 @@
 <div class="container login-container">
     <h2>Вход в аккаунт</h2>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
     {% if form.errors %}
         <div class="alert alert-danger" role="alert">
             <p>Пожалуйста, исправьте ошибки ниже:</p>
@@ -52,7 +43,7 @@
                 {% if field.errors %}
                     <li><strong>{{ field.label_tag }}</strong> {{ field.errors|striptags }}</li>
                 {% endif %}
-            {% endfor %} {# <--- CORRECTED: endfor is now inside the if form.errors block #}
+            {% endfor %}
             </ul>
         </div>
     {% endif %}
