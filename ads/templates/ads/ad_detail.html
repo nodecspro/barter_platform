@@ -1,46 +1,195 @@
-{% extends "base.html" %} {% block title %}{{ ad.title }}{% endblock %} {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h1>{{ ad.title }}</h1>
-        {% if ad.image_url %}
-        <img src="{{ ad.image_url }}" class="img-fluid mb-3" alt="{{ ad.title }}" style="max-height: 400px;" />
-        {% endif %} {# This is one if block #}
-        <p><strong>Автор:</strong> {{ ad.user.username }}</p>
-        <p><strong>Категория:</strong> {{ ad.get_category_display }}</p>
-        <p><strong>Состояние:</strong> {{ ad.get_condition_display }}</p>
-        <p><strong>Дата публикации:</strong> {{ ad.created_at|date:"d.m.Y H:i" }}</p>
-        <hr />
-        <h4>Описание:</h4>
-        <p>{{ ad.description|linebreaks }}</p>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ ad.title }} - Бартер Онлайн{% endblock %}
+
+{% block extra_head %}
+<style>
+    .ad-detail-image {
+        max-height: 500px; /* Максимальная высота изображения */
+        width: 100%;
+        object-fit: contain; /* Сохраняем пропорции, вписываем полностью */
+        border-radius: 0.375rem; /* Bootstrap's rounded */
+        background-color: var(--bs-tertiary-bg); /* Фон, если изображение с прозрачностью или не загрузилось */
+    }
+    .ad-detail-no-image {
+        height: 300px; /* Высота для плейсхолдера */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bs-tertiary-bg);
+        border-radius: 0.375rem;
+        color: var(--bs-secondary-color);
+    }
+    .ad-info-list dt {
+        font-weight: 600; /* Bootstrap's fw-semibold */
+        color: var(--bs-secondary-color);
+    }
+    .ad-info-list dd {
+        margin-bottom: 0.75rem;
+    }
+    .action-buttons .btn {
+        margin-right: 0.5rem;
+    }
+    .proposal-section {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.375rem;
+        padding: 1.5rem;
+        background-color: var(--bs-tertiary-bg); /* Чуть другой фон для выделения */
+    }
+     .existing-proposal-item {
+        padding: 0.75rem;
+        border: 1px solid var(--bs-border-color-translucent);
+        border-radius: 0.25rem;
+        background-color: var(--bs-secondary-bg);
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Левая колонка: Изображение -->
+        <div class="col-lg-7">
+            {% if ad.image_url %}
+                <img src="{{ ad.image_url }}" class="ad-detail-image shadow-sm" alt="{{ ad.title }}">
+            {% else %}
+                <div class="ad-detail-no-image shadow-sm">
+                    <i class="bi bi-image-alt" style="font-size: 5rem;"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Правая колонка: Информация и действия -->
+        <div class="col-lg-5">
+            <h1 class="mb-3">{{ ad.title }}</h1>
+            
+            <dl class="ad-info-list">
+                <dt>Автор:</dt>
+                <dd>{{ ad.user.username }}</dd>
+
+                <dt>Категория:</dt>
+                <dd>{{ ad.get_category_display }}</dd>
+
+                <dt>Состояние:</dt>
+                <dd>{{ ad.get_condition_display }}</dd>
+
+                <dt>Дата публикации:</dt>
+                <dd>{{ ad.created_at|date:"d.m.Y H:i" }}</dd>
+            </dl>
+            
+            {% if not ad.is_active %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Это объявление больше неактивно.
+                </div>
+            {% endif %}
+
+            <hr>
+
+            {% if user.is_authenticated %}
+                {% if ad.user == user %}
+                    {# Это объявление текущего пользователя #}
+                    <div class="action-buttons mb-3">
+                        <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-lg btn-warning">
+                            <i class="bi bi-pencil-square me-1"></i>Редактировать
+                        </a>
+                        <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-lg btn-danger">
+                            <i class="bi bi-trash me-1"></i>Удалить
+                        </a>
+                    </div>
+                {% elif ad.is_active %}
+                    {# Это чужое активное объявление, можно предложить обмен #}
+                    <div class="proposal-section mt-3">
+                        <h4><i class="bi bi-arrow-repeat me-2"></i>Предложить обмен</h4>
+                        {% if existing_proposals %}
+                            <p class="small text-muted">Вы уже отправляли предложения по этому товару:</p>
+                            {% for prop in existing_proposals %}
+                            <div class="existing-proposal-item small">
+                                <strong>Ваш товар:</strong> {{ prop.ad_sender.title }}<br>
+                                <strong>Статус:</strong> <span class="badge rounded-pill 
+                                    {% if prop.status == 'pending' %}text-bg-warning{% elif prop.status == 'accepted' %}text-bg-success{% elif prop.status == 'rejected' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+                                    {{ prop.get_status_display }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                            <hr>
+                        {% endif %}
+                        
+                        {% if proposal_form %}
+                            {% if proposal_form.fields.ad_sender.queryset.exists %}
+                            <form method="post" action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
+                                {% csrf_token %}
+                                {# Рендерим поля формы с form-floating #}
+                                <div class="form-floating mb-3">
+                                    {{ proposal_form.ad_sender }}
+                                    <label for="{{ proposal_form.ad_sender.id_for_label }}">{{ proposal_form.ad_sender.label }}</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    {{ proposal_form.comment }}
+                                    <label for="{{ proposal_form.comment.id_for_label }}">{{ proposal_form.comment.label }}</label>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Отправить предложение</button>
+                            </form>
+                            {% else %}
+                            <div class="alert alert-light text-center small" role="alert">
+                                У вас нет активных объявлений, чтобы предложить обмен.<br>
+                                <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-outline-primary mt-2">Создать объявление</a>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                {# Пользователь не аутентифицирован #}
+                 {% if ad.is_active %}
+                <div class="alert alert-info text-center mt-3" role="alert">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    <a href="{% url 'login' %}?next={{ request.path }}">Войдите</a> или <a href="{% url 'signup' %}?next={{ request.path }}">зарегистрируйтесь</a>, чтобы предложить обмен.
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
-    <div class="col-md-4">
-        {% if user.is_authenticated %} {# Main IF for authenticated users #} {% if ad.user == user %} {# Nested IF: if current user is the ad owner #}
-        <div class="d-grid gap-2">
-            <a href="{% url 'ads:ad_edit' ad.pk %}" class="btn btn-warning">Редактировать</a>
-            <a href="{% url 'ads:ad_delete' ad.pk %}" class="btn btn-danger">Удалить</a>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <hr>
+            <h4><i class="bi bi-card-text me-2"></i>Описание товара:</h4>
+            <div class="mt-2" style="white-space: pre-wrap;">{{ ad.description|linebreaksbr }}</div>
         </div>
-        {% else %} {# ELSE for: if current user is NOT the ad owner (but is authenticated) #}
-        <h4>Предложить обмен</h4>
-        {% if existing_proposals %} {# Nested IF for existing proposals #}
-        <div class="alert alert-info">
-            Вы уже отправили {{ existing_proposals.count }} предложение(й) по этому товару.
-            <ul>
-                {% for prop in existing_proposals %}
-                <li>Ваш товар: {{prop.ad_sender.title}} (Статус: {{prop.get_status_display}})</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %} {# End of IF existing_proposals #} {% if proposal_form %} {# Nested IF for proposal_form #} {% if proposal_form.fields.ad_sender.queryset.exists %} {# Nested IF for whether user has ads to propose #}
-        <form method="post" action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
-            {% csrf_token %} {{ proposal_form.as_p }}
-            <button type="submit" class="btn btn-success">Отправить предложение</button>
-        </form>
-        {% else %} {# ELSE for: if user has NO ads to propose #}
-        <p class="text-muted">У вас нет активных объявлений, чтобы предложить обмен.</p>
-        <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-outline-primary">Создать объявление</a>
-        {% endif %} {# End of IF proposal_form.fields.ad_sender.queryset.exists #} {% endif %} {# End of IF proposal_form #} {% endif %} {# End of IF ad.user == user #} {% else %} {# ELSE for: if user is NOT authenticated #}
-        <p><a href="{% url 'login' %}?next={{ request.path }}">Войдите</a>, чтобы предложить обмен.</p>
-        {% endif %} {# End of IF user.is_authenticated #}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Применяем классы Bootstrap к полям формы предложения обмена, если она есть
+    const proposalForm = document.querySelector('.proposal-section form');
+    if (proposalForm) {
+        const formElements = proposalForm.querySelectorAll('select, textarea, input:not([type="hidden"])');
+        formElements.forEach(function(el) {
+            if (el.tagName.toLowerCase() === 'select') {
+                if (!el.classList.contains('form-select')) el.classList.add('form-select');
+            } else {
+                if (!el.classList.contains('form-control')) el.classList.add('form-control');
+            }
+            // Для form-floating (если плейсхолдер не задан Django)
+            if (el.value === '' && !el.hasAttribute('placeholder') && (el.tagName.toLowerCase() === 'textarea' || ['text', 'url', 'email', 'number'].includes(el.type) )) {
+                el.setAttribute('placeholder', ' ');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
