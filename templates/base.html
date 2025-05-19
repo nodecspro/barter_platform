@@ -1,216 +1,319 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Бартерная Платформа{% endblock %}</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<!doctype html>
+<html lang="ru"> {# Класс темы будет добавлен сюда JS-скриптом #}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Бартер Онлайн{% endblock %}</title>
+
+    <script>
+        // Этот скрипт должен быть как можно выше в <head> для предотвращения мерцания
+        (function() {
+            let themeAppliedInitialLoad = false; // Флаг, что тема была применена при загрузке
+            try {
+                const storedTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let effectiveTheme = 'light'; // По умолчанию светлая
+
+                if (storedTheme) {
+                    effectiveTheme = storedTheme;
+                } else if (systemPrefersDark) {
+                    effectiveTheme = 'dark';
+                }
+
+                if (effectiveTheme === 'dark') {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    themeAppliedInitialLoad = true;
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    // Если тема светлая и это не дефолт, тоже можно считать примененной, если у вас есть класс для светлой
+                    // themeAppliedInitialLoad = true; // Раскомментируйте, если активно управляете и светлой темой
+                }
+
+                // Добавляем класс для временного отключения анимаций, если тема была активно установлена
+                // и это не просто дефолтное состояние (например, если localStorage пуст и система светлая)
+                if (themeAppliedInitialLoad || (storedTheme && storedTheme !== 'light')) { // Условие можно настроить
+                    document.documentElement.classList.add('no-theme-transition-on-load');
+                }
+
+            } catch (e) {
+                console.error('Error applying initial theme:', e);
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
     <style>
-      body {
-        padding-top: 5rem; /* Adjust if your navbar height changes */
-        padding-bottom: 3rem; /* For footer or bottom content */
-        background-color: #f8f9fa; /* Light grey background */
-      }
-      .ad-card-img {
-        /* Renamed from ad-card img to be more specific if needed */
-        max-height: 200px;
-        object-fit: cover; /* Ensures the image covers the area, might crop */
-        width: 100%;
-      }
-      .navbar {
-        margin-bottom: 1.5rem;
-      }
-      .container {
-        max-width: 1140px; /* Limit overall container width for larger screens */
-      }
-      .footer {
-        padding: 1rem 0;
-        background-color: #e9ecef;
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        font-size: 0.9em;
-        color: #6c757d;
-      }
-      /* Adjust main content padding if using fixed footer */
-      main.container {
-        margin-bottom: 60px; /* Height of the footer */
-      }
+        /* Базовые стили, которые должны работать и для светлой, и для темной темы */
+        :root {
+            /* Цвета для светлой темы (по умолчанию для Bootstrap) */
+            --body-bg: #f8f9fa;
+            --body-color: #212529;
+            --card-bg: #fff;
+            --card-border-color: rgba(0, 0, 0, 0.175);
+            --list-group-bg: #fff;
+            --list-group-border-color: rgba(0, 0, 0, 0.125);
+            --form-control-bg: #fff;
+            --form-control-color: #212529;
+            --form-control-border-color: #ced4da;
+            --form-floating-label-color: #6c757d;
+            --text-muted-color: #6c757d;
+            --link-color: #0d6efd;
+            --link-hover-color: #0a58ca;
+            --alert-danger-bg: #f8d7da;
+            --alert-danger-color: #842029;
+            --alert-danger-border-color: #f5c2c7;
+            --footer-bg: #e9ecef;
+            --footer-color: #6c757d;
+            --container-box-bg: #fff; /* Для signup-container, login-container */
+        }
+
+        [data-bs-theme="dark"] {
+            /* Цвета для темной темы */
+            --body-bg: #212529;
+            --body-color: #dee2e6;
+            --card-bg: #2b3035; /* Немного светлее основного фона */
+            --card-border-color: #495057;
+            --list-group-bg: #2b3035;
+            --list-group-border-color: #495057;
+            --form-control-bg: #343a40;
+            --form-control-color: #dee2e6;
+            --form-control-border-color: #495057;
+            --form-floating-label-color: #adb5bd;
+            --text-muted-color: #8d969e;
+            --link-color: #8ab4f8;
+            --link-hover-color: #a7c5f9;
+            --alert-danger-bg: #49292d;
+            --alert-danger-color: #f8d7da;
+            --alert-danger-border-color: #5e3034;
+            --footer-bg: #1c1f23;
+            --footer-color: #adb5bd;
+            --container-box-bg: #272b30;
+        }
+
+        body {
+            padding-top: 5rem;
+            padding-bottom: 60px; /* Отступ для фиксированного футера */
+            background-color: var(--body-bg);
+            color: var(--body-color);
+            /* Переход для плавной смены темы пользователем */
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+
+        /* Когда есть класс no-theme-transition-on-load, отключаем переходы для body и ключевых элементов */
+        /* Можно использовать '*' для более глобального отключения, но это может быть избыточно */
+        html.no-theme-transition-on-load body,
+        html.no-theme-transition-on-load .card,
+        html.no-theme-transition-on-load .list-group-item,
+        html.no-theme-transition-on-load .form-control,
+        html.no-theme-transition-on-load .signup-container,
+        html.no-theme-transition-on-load .login-container,
+        html.no-theme-transition-on-load .footer {
+            transition: none !important;
+        }
+        /* Если нужно еще более глобально, но аккуратно: */
+        /* html.no-theme-transition-on-load * { transition-duration: 0s !important; } */
+
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border-color);
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .list-group-item {
+            background-color: var(--list-group-bg);
+            border-color: var(--list-group-border-color);
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .form-control {
+            background-color: var(--form-control-bg);
+            color: var(--form-control-color);
+            border-color: var(--form-control-border-color);
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .form-control:focus { /* Фокус должен работать для обеих тем */
+            border-color: #86b7fe; /* Bootstrap primary focus color */
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            background-color: var(--form-control-bg); /* Сохраняем фон при фокусе */
+            color: var(--form-control-color); /* Сохраняем цвет текста при фокусе */
+        }
+        .form-floating > label {
+            color: var(--form-floating-label-color);
+        }
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: var(--form-floating-label-color); /* Можно сделать чуть ярче при активации, если нужно */
+            opacity: 0.65;
+        }
+        .text-muted { color: var(--text-muted-color) !important; } /* !important может быть нужен для Bootstrap */
+        a { color: var(--link-color); }
+        a:hover { color: var(--link-hover-color); }
+        
+        .alert-danger {
+            background-color: var(--alert-danger-bg);
+            color: var(--alert-danger-color);
+            border-color: var(--alert-danger-border-color);
+        }
+
+        .footer {
+            padding: 1rem 0;
+            background-color: var(--footer-bg);
+            color: var(--footer-color);
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .container { max-width: 1140px; }
+        .ad-card-img { max-height: 200px; object-fit: cover; width: 100%; }
+        .signup-container, .login-container {
+            max-width: 550px;
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background-color: var(--container-box-bg); /* Используем переменную */
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+             transition: background-color 0.2s ease-in-out;
+        }
+        /* ... другие общие стили и стили для password-requirements ... */
+        .password-requirements { /* ... как в предыдущем ответе ... */ }
     </style>
     {% block extra_head %}{% endblock %}
-  </head>
-  <body>
+</head>
+<body> {# Класс no-theme-transition-on-load будет применен к <html>, а не <body> #}
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'ads:ad_list' %}">Бартер Онлайн</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarCollapse"
-          aria-controls="navbarCollapse"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-          <ul class="navbar-nav me-auto mb-2 mb-md-0">
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'ad_list' %}active{% endif %}"
-                href="{% url 'ads:ad_list' %}"
-                >Все объявления</a
-              >
-            </li>
-            {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'ad_create' %}active{% endif %}"
-                href="{% url 'ads:ad_create' %}"
-                >Создать объявление</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'my_ads' %}active{% endif %}"
-                href="{% url 'ads:my_ads' %}"
-                >Мои объявления</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'my_proposals' %}active{% endif %}"
-                href="{% url 'ads:my_proposals' %}"
-                >Мои предложения</a
-              >
-            </li>
-            {% endif %}
-          </ul>
-          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-            {% if user.is_authenticated %}
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdownUser"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                {{ user.username }}
-              </a>
-              <ul
-                class="dropdown-menu dropdown-menu-end"
-                aria-labelledby="navbarDropdownUser"
-              >
-                <li>
-                  <form
-                    id="logout-form"
-                    method="post"
-                    action="{% url 'logout' %}"
-                  >
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item">Выйти</button>
-                  </form>
-                </li>
-              </ul>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}"
-                href="{% url 'login' %}?next={{ request.path }}"
-                >Войти</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link {% if request.resolver_match.url_name == 'signup' %}active{% endif %}"
-                href="{% url 'signup' %}"
-                >Регистрация</a
-              >
-            </li>
-            {% endif %}
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdownApi"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                API
-              </a>
-              <ul
-                class="dropdown-menu dropdown-menu-end"
-                aria-labelledby="navbarDropdownApi"
-              >
-                <li>
-                  <a class="dropdown-item" href="/api/ads/" target="_blank"
-                    >API объявлений</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="/api/proposals/"
-                    target="_blank"
-                    >API предложений</a
-                  >
-                </li>
-              </ul>
-            </li>
-          </ul>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'ads:ad_list' %}">Бартер Онлайн</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'ad_list' %}active{% endif %}" href="{% url 'ads:ad_list' %}">Все объявления</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'ad_create' %}active{% endif %}" href="{% url 'ads:ad_create' %}">Создать объявление</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'my_ads' %}active{% endif %}" href="{% url 'ads:my_ads' %}">Мои объявления</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'my_proposals' %}active{% endif %}" href="{% url 'ads:my_proposals' %}">Мои предложения</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownUser">
+                                <li>
+                                    <form id="logout-form" method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">Выйти</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}?next={{ request.path }}">Войти</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'signup' %}active{% endif %}" href="{% url 'signup' %}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                     <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownApi" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            API
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownApi">
+                            <li><a class="dropdown-item" href="/api/ads/" target="_blank">API объявлений</a></li>
+                            <li><a class="dropdown-item" href="/api/proposals/" target="_blank">API предложений</a></li>
+                        </ul>
+                    </li>
+                     <li class="nav-item"> {# Кнопка переключения темы #}
+                        <button id="theme-toggle-btn" class="btn btn-outline-secondary ms-2" type="button">
+                            <span id="theme-icon">Icon</span> {# Иконка будет меняться JS #}
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </div>
     </nav>
 
     <main class="container">
-      {% if messages %}
-      <div class="mt-3">
-        {% for message in messages %}
-        <div
-          class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"
-          ></button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %} {% block content %}
-      <!-- Page specific content will go here -->
-      {% endblock %}
+        {% if messages %}
+            <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        <!-- Page specific content will go here -->
+        {% endblock %}
     </main>
 
-    <footer class="footer mt-auto py-3 bg-light">
-      <div class="container text-center">
-        <span class="text-muted"
-          >© {% now "Y" %} Бартер Онлайн. Все права защищены (или не
-          очень).</span
-        >
-      </div>
+    <footer class="footer mt-auto py-3"> {# Убрал bg-light, будет управляться переменной --footer-bg #}
+        <div class="container text-center">
+            <span>© {% now "Y" %} Бартер Онлайн.</span>
+        </div>
     </footer>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
-    {% block extra_scripts %}{% endblock %}
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <script>
+        // Скрипт для удаления класса no-theme-transition-on-load после загрузки DOM
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.documentElement.classList.remove('no-theme-transition-on-load');
+            }, 0); // Можно убрать setTimeout или сделать очень маленьким, если все работает
+        });
+
+        // Скрипт для переключения темы пользователем
+        const themeToggleButton = document.getElementById('theme-toggle-btn');
+        const themeIcon = document.getElementById('theme-icon'); // Для иконки солнце/луна
+        const htmlElement = document.documentElement;
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeIcon(theme);
+        }
+
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.textContent = '☀️'; // Иконка солнца для переключения на светлую
+            } else {
+                themeIcon.textContent = '🌙'; // Иконка луны для переключения на темную
+            }
+        }
+        
+        if (themeToggleButton) {
+            themeToggleButton.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+        }
+        
+        // Установить иконку при начальной загрузке
+        const initialTheme = htmlElement.getAttribute('data-bs-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        updateThemeIcon(initialTheme);
+
+    </script>
+    {% block extra_scripts %}{% endblock %} {# Ваш кастомный JS для страниц (например, signup) #}
+</body>
 </html>
