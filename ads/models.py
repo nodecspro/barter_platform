@@ -1,6 +1,10 @@
+# ads/models.py
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # Используем стандартную User
 from django.urls import reverse
+from django.conf import settings  # Лучше использовать settings.AUTH_USER_MODEL
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class Ad(models.Model):
@@ -8,9 +12,6 @@ class Ad(models.Model):
         ("new", "Новый"),
         ("used", "Б/У"),
     ]
-    # CATEGORY_CHOICES - you might want to make this a separate model later
-    # For simplicity now, let's use CharField with predefined choices or free text
-    # Example categories (consider making this a ForeignKey to a Category model for better management)
     CATEGORY_CHOICES = [
         ("electronics", "Электроника"),
         ("clothing", "Одежда"),
@@ -20,15 +21,17 @@ class Ad(models.Model):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="ads", verbose_name="Пользователь"
+        settings.AUTH_USER_MODEL,  # Заменено на settings.AUTH_USER_MODEL
+        on_delete=models.CASCADE,
+        related_name="ads",
+        verbose_name="Пользователь",
     )
     title = models.CharField(max_length=200, verbose_name="Заголовок")
     description = models.TextField(verbose_name="Описание товара")
     image_url = models.URLField(
         max_length=500, blank=True, null=True, verbose_name="URL изображения"
     )
-    # For actual image uploads, you'd use:
-    # image = models.ImageField(upload_to='ad_images/', blank=True, null=True, verbose_name="Изображение")
+    # image = models.ImageField(upload_to='ad_images/', blank=True, null=True, verbose_name="Изображение") # Если будете использовать загрузку файлов
     category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
@@ -39,9 +42,7 @@ class Ad(models.Model):
         max_length=10, choices=CONDITION_CHOICES, verbose_name="Состояние"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата публикации")
-    is_active = models.BooleanField(
-        default=True, verbose_name="Активно"
-    )  # Useful for soft deletes or temporarily hiding
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
 
     def __str__(self):
         return f"{self.title} (от {self.user.username})"
@@ -57,40 +58,51 @@ class Ad(models.Model):
 
 class ExchangeProposal(models.Model):
     STATUS_CHOICES = [
-        ("pending", "Ожидает"),
-        ("accepted", "Принята"),
-        ("rejected", "Отклонена"),
+        ("pending", "Ожидает ответа"),  # Изменено для соответствия вашему views.py
+        ("accepted", "Принято"),  # Изменено
+        ("rejected", "Отклонено"),  # Изменено
     ]
 
-    # The user who initiated the proposal
     proposer = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,  # Заменено на settings.AUTH_USER_MODEL
         on_delete=models.CASCADE,
         related_name="sent_proposals",
         verbose_name="Инициатор предложения",
     )
-    # The ad offered by the proposer
     ad_sender = models.ForeignKey(
         Ad,
         on_delete=models.CASCADE,
-        related_name="proposals_sent",
-        verbose_name="Предлагаемый товар",
+        related_name="proposals_sent_with_this_ad",  # Более точное related_name
+        verbose_name="Предлагаемый товар (от инициатора)",
     )
-    # The ad requested by the proposer (owned by another user)
     ad_receiver = models.ForeignKey(
         Ad,
         on_delete=models.CASCADE,
-        related_name="proposals_received",
-        verbose_name="Запрашиваемый товар",
+        related_name="proposals_received_for_this_ad",  # Более точное related_name
+        verbose_name="Запрашиваемый товар (получателя)",
     )
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="pending", verbose_name="Статус"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Дата обновления"
+    )  # Добавлено поле updated_at
 
     def __str__(self):
-        return f"Предложение от {self.proposer.username} по {self.ad_receiver.title} (статус: {self.get_status_display()})"
+        # Используем username, если proposer установлен, иначе placeholder
+        proposer_username = (
+            self.proposer.username
+            if hasattr(self, "proposer") and self.proposer
+            else "[неизвестный инициатор]"
+        )
+        ad_receiver_title = (
+            self.ad_receiver.title
+            if hasattr(self, "ad_receiver") and self.ad_receiver
+            else "[неизвестный товар]"
+        )
+        return f"Предложение от {proposer_username} по '{ad_receiver_title}' (статус: {self.get_status_display()})"
 
     class Meta:
         verbose_name = "Предложение обмена"
@@ -98,23 +110,60 @@ class ExchangeProposal(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["ad_sender", "ad_receiver"], name="unique_proposal_pair"
+                fields=[
+                    "proposer",
+                    "ad_sender",
+                    "ad_receiver",
+                ],  # Добавил proposer для большей уникальности
+                condition=models.Q(status="pending") | models.Q(status="accepted"),
+                name="unique_active_proposal_for_ads_by_user",
             )
         ]
 
-    # Ensure proposer owns the ad_sender and does not own ad_receiver
     def clean(self):
-        from django.core.exceptions import ValidationError
+        # Вызываем родительский clean в первую очередь
+        super().clean()
 
-        if self.ad_sender.user != self.proposer:
-            raise ValidationError(
-                "Инициатор предложения должен быть владельцем предлагаемого товара (ad_sender)."
-            )
-        if self.ad_receiver.user == self.proposer:
-            raise ValidationError(
-                "Нельзя предлагать обмен на свой собственный товар (ad_receiver)."
-            )
-        if self.ad_sender == self.ad_receiver:
-            raise ValidationError(
-                "Предлагаемый и запрашиваемый товары должны быть разными."
-            )
+        if (
+            hasattr(self, "ad_sender")
+            and self.ad_sender
+            and hasattr(self, "ad_receiver")
+            and self.ad_receiver
+        ):
+            if (
+                self.ad_sender_id == self.ad_receiver_id
+            ):  # Сравниваем ID для эффективности
+                raise ValidationError(
+                    _("Предлагаемый и запрашиваемый товары должны быть разными.")
+                )
+
+        if (
+            hasattr(self, "proposer")
+            and self.proposer
+            and hasattr(self, "ad_sender")
+            and self.ad_sender
+        ):
+            if self.ad_sender.user != self.proposer:
+                # Эта ошибка должна быть привязана к полю ad_sender, если возможно.
+                # Если эта логика не обрабатывается в форме, то здесь.
+                raise ValidationError(
+                    {
+                        "ad_sender": _(
+                            "Инициатор предложения должен быть владельцем предлагаемого товара."
+                        )
+                    }
+                )
+
+        if (
+            hasattr(self, "proposer")
+            and self.proposer
+            and hasattr(self, "ad_receiver")
+            and self.ad_receiver
+        ):
+            if self.ad_receiver.user == self.proposer:
+                # Эта ошибка относится к общей логике предложения.
+                raise ValidationError(
+                    _(
+                        "Нельзя предлагать обмен на товар, который уже принадлежит вам (инициатору предложения)."
+                    )
+                )

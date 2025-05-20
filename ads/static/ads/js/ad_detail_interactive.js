@@ -1,17 +1,30 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Применяем классы Bootstrap к полям формы предложения обмена, если она есть
     const proposalForm = document.querySelector('.proposal-section form');
     if (proposalForm) {
-        const formElements = proposalForm.querySelectorAll('select, textarea, input:not([type="hidden"])');
+        const formElements = proposalForm.querySelectorAll(
+            'select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="reset"]):not([type="button"])'
+        ); // Более точный селектор для полей, которым нужны .form-control или .form-select
+
         formElements.forEach(function (el) {
-            if (el.tagName.toLowerCase() === 'select') {
-                if (!el.classList.contains('form-select')) el.classList.add('form-select');
-            } else {
-                if (!el.classList.contains('form-control')) el.classList.add('form-control');
+            const tagName = el.tagName.toLowerCase();
+            if (tagName === 'select') {
+                if (!el.classList.contains('form-select')) {
+                    el.classList.add('form-select');
+                }
+            } else { // textarea, input (text, email, url, etc.)
+                if (!el.classList.contains('form-control')) {
+                    el.classList.add('form-control');
+                }
             }
-            // Для form-floating (если плейсхолдер не задан Django)
-            if (el.value === '' && !el.hasAttribute('placeholder') && (el.tagName.toLowerCase() === 'textarea' || ['text', 'url', 'email', 'number'].includes(el.type))) {
-                el.setAttribute('placeholder', ' ');
+
+            // Для form-floating
+            // Проверяем, является ли родитель элементом .form-floating
+            const parentIsFloating = el.parentElement && el.parentElement.classList.contains('form-floating');
+            if (parentIsFloating && el.value === '' && !el.hasAttribute('placeholder')) {
+                // Не добавляем placeholder для select, т.к. у него empty_label
+                if (tagName !== 'select') {
+                    el.setAttribute('placeholder', ' '); // Или другое значение, если нужно
+                }
             }
         });
     }

@@ -1,4 +1,4 @@
-from django import forms
+from django import forms  # Нужен для forms.ValidationError
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -14,7 +14,12 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
 
-from rest_framework import viewsets, permissions, status, filters
+from rest_framework import (
+    viewsets,
+    permissions,
+    status as drf_status,
+    filters,
+)  # Переименовал status в drf_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -40,7 +45,12 @@ class AdListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Ad.objects.filter(is_active=True).select_related("user")
+        # Убедимся, что is_active есть в модели Ad
+        queryset = (
+            Ad.objects.filter(is_active=True)
+            .select_related("user")
+            .order_by("-created_at")
+        )
         query = self.request.GET.get("q")
         category = self.request.GET.get("category")
         condition = self.request.GET.get("condition")
@@ -57,8 +67,9 @@ class AdListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["categories"] = Ad.CATEGORY_CHOICES
-        context["conditions"] = Ad.CONDITION_CHOICES
+        # Убедимся, что эти атрибуты есть у модели Ad или определены где-то еще
+        context["categories"] = getattr(Ad, "CATEGORY_CHOICES", [])
+        context["conditions"] = getattr(Ad, "CONDITION_CHOICES", [])
         context["current_query"] = self.request.GET.get("q", "")
         context["current_category"] = self.request.GET.get("category", "")
         context["current_condition"] = self.request.GET.get("condition", "")
@@ -72,13 +83,14 @@ class AdDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Убедимся, что у Ad есть поле user
         if self.request.user.is_authenticated and self.object.user != self.request.user:
-            # Only show proposal form if user is logged in and not the owner
             context["proposal_form"] = ExchangeProposalForm(user=self.request.user)
-            # Check if user already proposed for this ad with any of their items
             existing_proposals = ExchangeProposal.objects.filter(
                 proposer=self.request.user, ad_receiver=self.object
-            ).exclude(status="rejected")
+            ).exclude(
+                status="rejected"
+            )  # 'rejected' - убедитесь, что это значение соответствует модели
             context["existing_proposals"] = existing_proposals
         return context
 
@@ -87,11 +99,16 @@ class AdCreateView(LoginRequiredMixin, CreateView):
     model = Ad
     form_class = AdForm
     template_name = "ads/ad_form.html"
+    # success_url = reverse_lazy("ads:ad_list") # Или get_absolute_url модели Ad
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         messages.success(self.request, "Объявление успешно создано!")
         return super().form_valid(form)
+
+    def get_success_url(self):
+        # После создания объявления, перенаправляем на страницу деталей этого объявления
+        return self.object.get_absolute_url()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -112,6 +129,9 @@ class AdUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         messages.success(self.request, "Объявление успешно обновлено!")
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form_title"] = "Редактировать объявление"
@@ -121,20 +141,24 @@ class AdUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class AdDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Ad
     template_name = "ads/ad_confirm_delete.html"
-    success_url = reverse_lazy("ads:my_ads")  # Redirect to user's ads list
-    context_object_name = "object"
+    success_url = reverse_lazy("ads:my_ads")
+    context_object_name = "object"  # Можно использовать 'ad' для ясности
 
     def test_func(self):
         ad = self.get_object()
         return self.request.user == ad.user
 
-    def form_valid(self, form):
+    # form_valid не нужен для DeleteView, если не нужна кастомная логика перед удалением.
+    # Сообщение об успехе лучше добавлять через SuccessMessageMixin или переопределяя delete()
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
         messages.success(self.request, "Объявление успешно удалено!")
-        return super().form_valid(form)
+        return response
 
 
 @login_required
 def my_ads_view(request):
+    # Убедимся, что у Ad есть поле user и created_at
     user_ads = Ad.objects.filter(user=request.user).order_by("-created_at")
     paginator = Paginator(user_ads, 10)
     page_number = request.GET.get("page")
@@ -155,40 +179,39 @@ def create_exchange_proposal(request, ad_receiver_pk):
         )
         return redirect("ads:ad_detail", pk=ad_receiver_pk)
 
-    # Check if a non-rejected proposal already exists from this user for this ad_receiver
-    # (allowing multiple proposals if different ad_senders are used)
-    # Or, enforce only one active proposal per (proposer, ad_receiver) pair
-    # current_proposal_exists = ExchangeProposal.objects.filter(
-    #     proposer=request.user,
-    #     ad_receiver=ad_receiver
-    # ).exclude(status='rejected').exists()
-    # if current_proposal_exists:
-    #    messages.warning(request, "У вас уже есть активное предложение для этого товара.")
-    #    return redirect('ads:ad_detail', pk=ad_receiver_pk)
-
     if request.method == "POST":
         form = ExchangeProposalForm(request.POST, user=request.user)
         if form.is_valid():
-            if not form.cleaned_data.get("ad_sender"):
+            ad_sender = form.cleaned_data.get("ad_sender")
+            if (
+                not ad_sender
+            ):  # Эта проверка дублирует form.is_valid(), если ad_sender required=True
+                # Но полезна, если ad_sender неактивно (disabled) и не передается
                 messages.error(
                     request,
-                    "Пожалуйста, выберите ваш товар для обмена. Если список пуст, у вас нет активных объявлений.",
+                    "Пожалуйста, выберите ваш товар для обмена. Если список пуст или неактивен, у вас нет подходящих активных объявлений.",
                 )
+                # Передаем форму обратно с ошибками, если они есть
                 return render(
                     request,
                     "ads/proposal_form.html",
                     {"form": form, "ad_receiver": ad_receiver},
                 )
 
+            # Создаем объект, но не сохраняем в базу данных
             proposal = form.save(commit=False)
+
+            # Устанавливаем обязательные поля, которые не пришли из формы
             proposal.proposer = request.user
             proposal.ad_receiver = ad_receiver
+            # proposal.status по умолчанию 'pending' (если так задано в модели)
 
-            # Double check for existing non-rejected proposal with the same ad_sender and ad_receiver
+            # Проверка на дублирующее активное предложение (с теми же товарами)
+            # Убедимся, что ad_sender - это объект, а не ID
             if (
                 ExchangeProposal.objects.filter(
                     proposer=request.user,
-                    ad_sender=proposal.ad_sender,
+                    ad_sender=ad_sender,  # Используем ad_sender из cleaned_data
                     ad_receiver=ad_receiver,
                 )
                 .exclude(status="rejected")
@@ -196,24 +219,42 @@ def create_exchange_proposal(request, ad_receiver_pk):
             ):
                 messages.warning(
                     request,
-                    "Вы уже отправили такое же предложение (с этим вашим товаром на этот запрашиваемый товар).",
+                    "Вы уже отправляли активное предложение обмена этого вашего товара на этот запрашиваемый товар.",
                 )
                 return redirect("ads:ad_detail", pk=ad_receiver_pk)
 
             try:
-                proposal.full_clean()  # Run model-level validation
-                proposal.save()
+                # Валидация на уровне модели. Все поля (proposer, ad_receiver) уже должны быть установлены.
+                proposal.full_clean()
+                proposal.save()  # Теперь сохраняем в базу
                 messages.success(
                     request,
                     f"Предложение обмена для '{ad_receiver.title}' успешно отправлено!",
                 )
                 return redirect("ads:ad_detail", pk=ad_receiver_pk)
-            except forms.ValidationError as e:
-                messages.error(request, f"Ошибка валидации: {e}")
+            except (
+                forms.ValidationError
+            ) as e:  # forms.ValidationError из django.core.exceptions
+                # Ошибки из full_clean() (включая ошибки из model.clean()) попадут сюда
+                # Сбор всех ошибок для отображения
+                error_messages = []
+                if hasattr(e, "message_dict"):
+                    for field, errors in e.message_dict.items():
+                        for error in errors:
+                            error_messages.append(
+                                f"{field if field != '__all__' else 'Общая ошибка'}: {error}"
+                            )
+                else:
+                    error_messages.append(str(e))
+                messages.error(
+                    request, "Ошибка валидации: " + "; ".join(error_messages)
+                )
+                # Форма уже содержит ошибки, если они возникли на этапе form.is_valid()
+                # Если ошибка из model.clean(), нужно ее как-то добавить в форму для отображения,
+                # либо просто показать общее сообщение, как сейчас.
+                # form.add_error(None, e) # Это добавит ошибку non-field error в форму
 
-        else:
-            messages.error(request, "Пожалуйста, исправьте ошибки в форме.")
-    else:
+    else:  # GET request
         form = ExchangeProposalForm(user=request.user)
 
     return render(
@@ -225,7 +266,9 @@ def create_exchange_proposal(request, ad_receiver_pk):
 def my_proposals_view(request):
     sent_proposals = (
         ExchangeProposal.objects.filter(proposer=request.user)
-        .select_related("ad_sender", "ad_receiver", "ad_receiver__user")
+        .select_related(
+            "ad_sender", "ad_receiver", "ad_receiver__user", "proposer"
+        )  # Добавил proposer для полноты
         .order_by("-created_at")
     )
     received_proposals = (
@@ -245,34 +288,33 @@ def my_proposals_view(request):
 def update_proposal_status(request, proposal_pk, new_status):
     proposal = get_object_or_404(ExchangeProposal, pk=proposal_pk)
 
+    # Убедимся, что у Ad есть поле user
     if proposal.ad_receiver.user != request.user:
         messages.error(
             request, "Только получатель предложения может изменить его статус."
         )
         return redirect("ads:my_proposals")
 
-    if new_status not in ["accepted", "rejected"]:
+    # Убедимся, что значения статусов соответствуют модели
+    if (
+        new_status not in dict(ExchangeProposal.STATUS_CHOICES).keys()
+    ):  # Проверка по ключам из choices
         messages.error(request, "Недопустимый статус.")
         return redirect("ads:my_proposals")
 
-    if proposal.status != "pending":
+    if proposal.status != "pending":  # 'pending'
         messages.warning(request, "Статус этого предложения уже был изменен.")
         return redirect("ads:my_proposals")
 
     proposal.status = new_status
     proposal.save()
 
-    if new_status == "accepted":
+    if new_status == "accepted":  # 'accepted'
         messages.success(
             request, f"Предложение по товару '{proposal.ad_sender.title}' принято!"
         )
-        # Optional: Deactivate both ads involved in the accepted exchange
-        # proposal.ad_sender.is_active = False
-        # proposal.ad_sender.save()
-        # proposal.ad_receiver.is_active = False
-        # proposal.ad_receiver.save()
-        # messages.info(request, "Оба объявления, участвующие в обмене, были деактивированы.")
-    elif new_status == "rejected":
+        # Optional: Deactivate ads logic
+    elif new_status == "rejected":  # 'rejected'
         messages.info(
             request, f"Предложение по товару '{proposal.ad_sender.title}' отклонено."
         )
@@ -281,6 +323,7 @@ def update_proposal_status(request, proposal_pk, new_status):
 
 
 # --- DRF API Views (ViewSets) ---
+# (Оставляю DRF часть без изменений, так как проблема была в HTML views)
 
 
 class AdViewSet(viewsets.ModelViewSet):
@@ -302,10 +345,7 @@ class AdViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_destroy(self, instance):
-        # Soft delete example for API, or actual delete
-        # instance.is_active = False
-        # instance.save()
-        instance.delete()  # Default behavior
+        instance.delete()
 
 
 class ExchangeProposalViewSet(viewsets.ModelViewSet):
@@ -313,14 +353,14 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
         IsProposalOwnerOrReceiver,
-    ]  # Basic auth + custom for object level
+    ]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {
         "status": ["exact"],
         "proposer__username": ["exact"],
         "ad_receiver__user__username": ["exact"],
-        "ad_sender__id": ["exact"],  # Filter by user's ad offered
-        "ad_receiver__id": ["exact"],  # Filter by ad requested
+        "ad_sender__id": ["exact"],
+        "ad_receiver__id": ["exact"],
     }
     ordering_fields = ["created_at", "status"]
 
@@ -328,7 +368,6 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return ExchangeProposal.objects.none()
-        # Users can see proposals they sent or proposals for their ads
         return (
             ExchangeProposal.objects.filter(
                 Q(proposer=user) | Q(ad_receiver__user=user)
@@ -344,9 +383,6 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        # ad_sender must belong to self.request.user
-        # ad_receiver must not belong to self.request.user
-        # These are validated in serializer's validate method
         serializer.save(proposer=self.request.user)
 
     @action(
@@ -357,15 +393,10 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
         if proposal.status != "pending":
             return Response(
                 {"detail": "Предложение уже обработано."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=drf_status.HTTP_400_BAD_REQUEST,
             )
         proposal.status = "accepted"
         proposal.save()
-        # Optional: Deactivate ads
-        # proposal.ad_sender.is_active = False
-        # proposal.ad_sender.save()
-        # proposal.ad_receiver.is_active = False
-        # proposal.ad_receiver.save()
         return Response(
             ExchangeProposalSerializer(proposal, context={"request": request}).data
         )
@@ -378,7 +409,7 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
         if proposal.status != "pending":
             return Response(
                 {"detail": "Предложение уже обработано."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=drf_status.HTTP_400_BAD_REQUEST,
             )
         proposal.status = "rejected"
         proposal.save()
@@ -386,40 +417,39 @@ class ExchangeProposalViewSet(viewsets.ModelViewSet):
             ExchangeProposalSerializer(proposal, context={"request": request}).data
         )
 
-    # Proposer might want to cancel their own pending proposal
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated]
-    )  # Custom check inside
+    )
     def cancel(self, request, pk=None):
         proposal = self.get_object()
         if proposal.proposer != request.user:
             return Response(
                 {"detail": "Только инициатор может отменить предложение."},
-                status=status.HTTP_403_FORBIDDEN,
+                status=drf_status.HTTP_403_FORBIDDEN,
             )
         if proposal.status != "pending":
             return Response(
                 {"detail": "Нельзя отменить уже обработанное предложение."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=drf_status.HTTP_400_BAD_REQUEST,
             )
-
-        # Instead of deleting, could mark as 'cancelled' if you add that status
         proposal.delete()
         return Response(
-            {"detail": "Предложение отменено."}, status=status.HTTP_204_NO_CONTENT
+            {"detail": "Предложение отменено."}, status=drf_status.HTTP_204_NO_CONTENT
         )
 
 
 class SignUpView(CreateView):
     form_class = CustomUserRegistrationForm
-    success_url = reverse_lazy(
-        "login"
-    )  # Or 'ads:ad_list' if you want to redirect to main page
+    success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
 
     def form_valid(self, form):
-        user = form.save()
+        # user = form.save() # Метод save в CustomUserRegistrationForm уже обрабатывает сохранение
+        super().form_valid(
+            form
+        )  # Вызываем родительский form_valid, который вызовет form.save()
         messages.success(
             self.request, "Регистрация прошла успешно! Пожалуйста, войдите."
         )
-        return super().form_valid(form)  # This will redirect to success_url
+        # Редирект на success_url будет выполнен автоматически из CreateView
+        return redirect(self.get_success_url())  # Явный редирект после сообщения
