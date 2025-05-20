@@ -130,6 +130,8 @@
    Bootstrap CSS Variables Override - DARK THEME
    -------------------------------------------------------------------------- */
 [data-bs-theme="dark"] {
+    --source-navbar-bg-dark: #212529;
+
     --bs-body-bg: var(--source-body-bg-dark);
     --bs-body-color: var(--source-body-color-dark);
     --bs-body-color-rgb: 222, 226, 230;
@@ -292,6 +294,10 @@ a:hover {
     bottom: 0;
     left: 0;
     z-index: 1030;
+}
+
+.navbar {
+    background-color: var(--bs-navbar-bg);
 }
 
 /* Ensure Bootstrap Icons are not affected by general link color if they are inside <a> tags
