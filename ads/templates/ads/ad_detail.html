@@ -8,9 +8,7 @@
 {% endblock extra_head %}
 {% block content %}
   <div class="container mt-4 mb-5">
-    {# Добавлен mb-5 для отступа от футера #}
-    {# Сообщения Django (если они не глобально в base.html и нужно их здесь) #}
-    {# Обычно они в base.html, если так, этот блок можно убрать #}
+    {% comment %} Сообщения Django обычно находятся в base.html. Если они там, этот блок здесь не нужен. {% endcomment %}
     {% if messages %}
       <div class="row">
         <div class="col-12">
@@ -28,11 +26,11 @@
       </div>
     {% endif %}
     <div class="row g-lg-5 g-md-4 g-3">
-      {# Адаптивные отступы между колонками #}
-      <!-- Левая колонка: Изображение -->
-      <div class="col-lg-7">
-        <div class="ad-image-container shadow-sm">
-          {% if ad.image_url %}
+      {% if ad.image_url %}
+        {# --- Вариант С ИЗОБРАЖЕНИЕМ --- #}
+        <div class="col-lg-7">
+          <div class="ad-image-container shadow-sm has-image">
+            {# <--- Добавлен класс .has-image #}
             <img src="{{ ad.image_url }}"
                  class="ad-detail-image"
                  alt="{{ ad.title }}"
@@ -40,179 +38,62 @@
                  onerror="handleImageError(this, 'adImageErrorPlaceholder')" />
             <div id="adImageErrorPlaceholder"
                  class="ad-detail-no-image initially-hidden">
-              <i class="bi bi-exclamation-triangle-fill"></i>
+              <i class="bi bi-exclamation-triangle-fill text-warning"></i>
               <span>Не удалось загрузить изображение</span>
             </div>
-          {% else %}
+          </div>
+        </div>
+        <div class="col-lg-5">
+          {% include "ads/includes/ad_info_panel.html" with ad=ad user=user proposal_form=proposal_form existing_proposals=existing_proposals %}
+        </div>
+      {% else %}
+        {# --- Вариант БЕЗ ИЗОБРАЖЕНИЯ --- #}
+        <div class="col-lg-4 col-md-5 d-flex align-items-center justify-content-center">
+          <div class="ad-image-container shadow-sm no-image-default w-100">
+            {# <--- Добавлен класс .no-image-default #}
             <div class="ad-detail-no-image" id="adImageDefaultPlaceholder">
               <i class="bi bi-image-alt"></i>
               <span>Изображение отсутствует</span>
             </div>
-          {% endif %}
-        </div>
-      </div>
-      <!-- Правая колонка: Информация и действия -->
-      <div class="col-lg-5">
-        <h1 class="mb-3 h2">{{ ad.title }}</h1>
-        {# Уменьшил заголовок до h2 для лучшей иерархии #}
-        {% if not ad.is_active %}
-          <div class="alert alert-warning d-flex align-items-center mb-3"
-               role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
-            <div>Это объявление больше неактивно.</div>
-          </div>
-        {% endif %}
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-transparent py-3">
-            <h5 class="mb-0 d-flex align-items-center">
-              <i class="bi bi-info-circle-fill me-2"></i>Информация о товаре
-            </h5>
-          </div>
-          <div class="card-body">
-            <dl class="ad-info-list">
-              <dt>
-                <i class="bi bi-person-circle"></i>Автор:
-              </dt>
-              <dd>
-                {{ ad.user.username }}
-              </dd>
-              <dt>
-                <i class="bi bi-tag-fill"></i>Категория:
-              </dt>
-              <dd>
-                {{ ad.get_category_display }}
-              </dd>
-              <dt>
-                <i class="bi bi-award-fill"></i>Состояние:
-              </dt>
-              <dd>
-                {{ ad.get_condition_display }}
-              </dd>
-              <dt>
-                <i class="bi bi-calendar-event-fill"></i>Дата публикации:
-              </dt>
-              <dd>
-                {{ ad.created_at|date:'d F Y, H:i' }}
-              </dd>
-            </dl>
           </div>
         </div>
-        {% if user.is_authenticated %}
-          {% if ad.user == user %}
-            {# Это объявление текущего пользователя #}
-            <div class="action-buttons mb-3">
-              <a href="{% url 'ads:ad_edit' ad.pk %}"
-                 class="btn btn-lg btn-warning flex-grow-1 flex-sm-grow-0"><i class="bi bi-pencil-square me-1"></i>Редактировать</a>
-              <a href="{% url 'ads:ad_delete' ad.pk %}"
-                 class="btn btn-lg btn-danger flex-grow-1 flex-sm-grow-0"><i class="bi bi-trash-fill me-1"></i>Удалить</a>
-            </div>
-          {% elif ad.is_active %}
-            {# Это чужое активное объявление, можно предложить обмен #}
-            <div class="proposal-section shadow-sm">
-              {# Добавил тень #}
-              <h4>
-                <i class="bi bi-arrow-repeat"></i>Предложить обмен
-              </h4>
-              {% if existing_proposals %}
-                <p class="small text-muted mb-2">Вы уже отправляли предложения по этому товару:</p>
-                {% for prop in existing_proposals %}
-                  <div class="existing-proposal-item">
-                    <strong>Ваш товар:</strong> {{ prop.ad_sender.title|truncatechars:35 }}
-                    <br />
-                    <strong>Статус:</strong>
-                    <span class="badge rounded-pill {% if prop.status == 'pending' %} text-bg-warning {% elif prop.status == 'accepted' %} text-bg-success {% elif prop.status == 'rejected' %} text-bg-danger {% else %} text-bg-secondary {% endif %}">
-                      {{ prop.get_status_display }}
-                    </span>
-                  </div>
-                {% endfor %}
-                <hr class="my-3" />
-              {% endif %}
-              {% if proposal_form %}
-                {% if proposal_form.fields.ad_sender.queryset.exists %}
-                  <form method="post"
-                        action="{% url 'ads:proposal_create' ad_receiver_pk=ad.pk %}">
-                    {% csrf_token %}
-                    {# Отображение ошибок формы, если они есть #}
-                    {% if proposal_form.non_field_errors %}
-                      <div class="alert alert-danger py-2">
-                        {% for error in proposal_form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}
-                      </div>
-                    {% endif %}
-                    <div class="form-floating mb-3">
-                      {{ proposal_form.ad_sender }}
-                      <label for="{{ proposal_form.ad_sender.id_for_label }}">
-                        {{ proposal_form.ad_sender.label }}
-                        {% if proposal_form.ad_sender.field.required %}*{% endif %}
-                      </label>
-                      {% if proposal_form.ad_sender.help_text %}
-                        <div class="form-text"
-                             id="{{ proposal_form.ad_sender.id_for_label }}_helptext">
-                          {{ proposal_form.ad_sender.help_text|safe }}
-                        </div>
-                      {% endif %}
-                      {% if proposal_form.ad_sender.errors %}
-                        <div class="invalid-feedback d-block">
-                          {% for error in proposal_form.ad_sender.errors %}{{ error }}{% endfor %}
-                        </div>
-                      {% endif %}
-                    </div>
-                    <div class="form-floating mb-3">
-                      {{ proposal_form.comment }}
-                      <label for="{{ proposal_form.comment.id_for_label }}">
-                        {{ proposal_form.comment.label }}
-                        {% if proposal_form.comment.field.required %}*{% endif %}
-                      </label>
-                      {% if proposal_form.comment.help_text %}
-                        <div class="form-text">{{ proposal_form.comment.help_text|safe }}</div>
-                      {% endif %}
-                      {% if proposal_form.comment.errors %}
-                        <div class="invalid-feedback d-block">
-                          {% for error in proposal_form.comment.errors %}{{ error }}{% endfor %}
-                        </div>
-                      {% endif %}
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 btn-lg">
-                      <i class="bi bi-send-fill me-1"></i>Отправить предложение
-                    </button>
-                  </form>
-                {% else %}
-                  <div class="alert alert-light text-center small py-3" role="alert">
-                    <i class="bi bi-exclamation-circle fs-4 d-block mb-2"></i>
-                    У вас нет активных объявлений, чтобы предложить обмен.
-                    <br />
-                    <a href="{% url 'ads:ad_create' %}" class="btn btn-sm btn-primary mt-2"><i class="bi bi-plus-circle-fill me-1"></i>Создать объявление</a>
-                  </div>
-                {% endif %}
-              {% else %}
-                {# Случай, когда proposal_form не передана (например, если объявление принадлежит текущему пользователю, но ad.is_active == True) #}
-                {# Этот блок обычно не нужен, так как логика выше уже покрывает случай ad.user == user #}
-              {% endif %}
-            </div>
-          {% endif %}
-        {% else %}
-          {# Пользователь не аутентифицирован #}
-          {% if ad.is_active %}
-            <div class="alert alert-info text-center mt-3 py-3" role="alert">
-              <i class="bi bi-box-arrow-in-right me-2 fs-4 d-block mb-2"></i>
-              <a href="{% url 'login' %}?next={{ request.path }}" class="fw-bold">Войдите</a> или
-              <a href="{% url 'signup' %}?next={{ request.path }}" class="fw-bold">зарегистрируйтесь</a>,
-              <br />
-              чтобы предложить обмен.
-            </div>
-          {% endif %}
-        {% endif %}
-      </div>
+        <div class="col-lg-8 col-md-7">
+          {% include "ads/includes/ad_info_panel.html" with ad=ad user=user proposal_form=proposal_form existing_proposals=existing_proposals %}
+        </div>
+      {% endif %}
     </div>
+    {# Секция описания товара #}
     <div class="row mt-4">
       <div class="col-12 ad-description-section">
         <h4 class="mb-3">
           <i class="bi bi-card-text"></i>Описание товара:
         </h4>
-        <div class="ad-description-content bg-body-tertiary p-3 rounded">{{ ad.description|linebreaksbr }}</div>
+        <div class="ad-description-content">
+          {# Классы bg-body-tertiary и rounded лучше задавать в CSS, если они постоянны #}
+          {{ ad.description|linebreaksbr }}
+        </div>
       </div>
     </div>
   </div>
 {% endblock content %}
 {% block extra_scripts %}
   <script src="{% static 'ads/js/ad_detail_interactive.js' %}"></script>
+  <script>
+    // Убедитесь, что функция handleImageError(imageElement, placeholderId)
+    // определена в вашем файле ad_detail_interactive.js:
+    /*
+    function handleImageError(imageElement, placeholderId) {
+      if (imageElement) {
+        imageElement.style.display = 'none';
+      }
+      const placeholder = document.getElementById(placeholderId);
+      if (placeholder) {
+        placeholder.classList.remove('initially-hidden');
+        // Убедитесь, что CSS для .ad-detail-no-image имеет display: flex !important;
+        // или явно задайте здесь, если initially-hidden перебивает display: flex
+        // placeholder.style.display = 'flex';
+      }
+    }
+    */
+  </script>
 {% endblock extra_scripts %}

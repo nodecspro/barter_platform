@@ -1,9 +1,23 @@
+// Функция для обработки ошибок загрузки основного изображения объявления
+function handleImageError(imageElement, placeholderId) {
+    if (imageElement) {
+        // Скрываем "сломанное" изображение
+        imageElement.style.display = 'none';
+    }
+    const placeholder = document.getElementById(placeholderId);
+    if (placeholder) {
+        // Показываем плейсхолдер ошибки
+        placeholder.classList.remove('initially-hidden'); // Удаляем класс, который его скрывал
+    }
+}
+
+// Код, который у вас уже был, для стилизации формы предложения
 document.addEventListener('DOMContentLoaded', function () {
     const proposalForm = document.querySelector('.proposal-section form');
     if (proposalForm) {
         const formElements = proposalForm.querySelectorAll(
             'select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="reset"]):not([type="button"])'
-        ); // Более точный селектор для полей, которым нужны .form-control или .form-select
+        );
 
         formElements.forEach(function (el) {
             const tagName = el.tagName.toLowerCase();
@@ -21,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Проверяем, является ли родитель элементом .form-floating
             const parentIsFloating = el.parentElement && el.parentElement.classList.contains('form-floating');
             if (parentIsFloating && el.value === '' && !el.hasAttribute('placeholder')) {
-                // Не добавляем placeholder для select, т.к. у него empty_label
+                // Не добавляем placeholder для select, т.к. у него empty_label из Django
                 if (tagName !== 'select') {
-                    el.setAttribute('placeholder', ' '); // Или другое значение, если нужно
+                    el.setAttribute('placeholder', ' '); // Пробел как плейсхолдер для активации floating label
                 }
             }
         });
