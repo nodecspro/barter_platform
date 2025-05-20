@@ -1,75 +1,96 @@
-(function () { // Оборачиваем в IIFE для изоляции области видимости
+; (function () {
+    'use strict';
 
     const THEME_KEY = 'theme';
     const DARK_THEME_VALUE = 'dark';
     const LIGHT_THEME_VALUE = 'light';
     const NO_TRANSITION_CLASS = 'no-theme-transition-on-load';
 
+    const ICONS = {
+        light: '<i class="bi bi-moon-stars-fill"></i>', // Показана луна -> можно переключить на темную
+        dark: '<i class="bi bi-sun-fill"></i>'         // Показано солнце -> можно переключить на светлую
+    };
+
+    const ARIA_LABELS = {
+        light: 'Переключить на темную тему',
+        dark: 'Переключить на светлую тему'
+    };
+
     const htmlElement = document.documentElement;
     const themeToggleButton = document.getElementById('theme-toggle-btn');
-    const themeIcon = document.getElementById('theme-icon'); // Предполагаем, что есть элемент для иконки
+    const themeIconElement = document.getElementById('theme-icon');
 
-    function applyTheme(theme) {
-        htmlElement.setAttribute('data-bs-theme', theme);
-        if (themeIcon) {
-            updateThemeIcon(theme);
+    // Флаг, чтобы гарантировать однократное выполнение пост-загрузочной логики
+    let postLoadLogicExecuted = false;
+
+    function updateButtonState(currentTheme) {
+        if (themeIconElement) {
+            // Иконка отражает, на какую тему МОЖНО переключиться
+            // Если текущая темная, показываем иконку солнца (намек на светлую)
+            // Если текущая светлая, показываем иконку луны (намек на темную)
+            themeIconElement.innerHTML = (currentTheme === DARK_THEME_VALUE) ? ICONS.dark : ICONS.light;
+        }
+        if (themeToggleButton) {
+            // Aria-label отражает действие, которое произойдет
+            themeToggleButton.setAttribute('aria-label', (currentTheme === DARK_THEME_VALUE) ? ARIA_LABELS.dark : ARIA_LABELS.light);
         }
     }
 
-    function updateThemeIcon(theme) {
-        if (!themeIcon) return;
-        if (theme === DARK_THEME_VALUE) {
-            themeIcon.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Показываем солнце, значит текущая тема темная
-        } else {
-            themeIcon.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Показываем луну, значит текущая тема светлая
-        }
+    function applyTheme(newTheme) {
+        htmlElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem(THEME_KEY, newTheme);
+        updateButtonState(newTheme); // Обновляем иконку и aria-label
     }
 
-    function getPreferredTheme() {
-        const storedTheme = localStorage.getItem(THEME_KEY);
-        if (storedTheme) {
-            return storedTheme;
+    function initializeUIFromExistingTheme() {
+        if (!themeToggleButton && !themeIconElement) return; // Нечего обновлять
+
+        let currentTheme = htmlElement.getAttribute('data-bs-theme');
+
+        // Резервная логика: если inline-скрипт не установил data-bs-theme
+        // (Это не должно происходить при нормальной работе)
+        if (!currentTheme) {
+            console.warn('Inline theme script did not set data-bs-theme. Initializing from theme_switcher.js');
+            const storedTheme = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            currentTheme = storedTheme || (prefersDark ? DARK_THEME_VALUE : LIGHT_THEME_VALUE);
+            htmlElement.setAttribute('data-bs-theme', currentTheme); // Устанавливаем, если не было
         }
-        // Если в localStorage нет, используем системные настройки
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? DARK_THEME_VALUE : LIGHT_THEME_VALUE;
+        updateButtonState(currentTheme);
     }
 
-    // --- Инициализация темы при загрузке скрипта ---
-    // Этот блок может дублировать инлайн-скрипт в <head>, но инлайн-скрипт важнее для предотвращения мерцания.
-    // Этот блок здесь больше для установки иконки и как резервный.
-    const initialTheme = getPreferredTheme();
-    applyTheme(initialTheme); // Применяем тему (атрибут) и обновляем иконку
-
-    // --- Обработчик для кнопки переключения ---
     if (themeToggleButton) {
         themeToggleButton.addEventListener('click', () => {
-            // Удаляем класс, который отключал анимацию при загрузке, если он еще есть
-            // (хотя он должен удаляться другим скриптом по DOMContentLoaded)
-            if (htmlElement.classList.contains(NO_TRANSITION_CLASS)) {
-                htmlElement.classList.remove(NO_TRANSITION_CLASS);
-            }
-
-            let currentTheme = htmlElement.getAttribute('data-bs-theme');
-            // Если атрибута нет, берем из localStorage или системных (на случай, если инлайн-скрипт не сработал)
-            if (!currentTheme) {
-                currentTheme = getPreferredTheme();
-            }
-
-            const newTheme = currentTheme === DARK_THEME_VALUE ? LIGHT_THEME_VALUE : DARK_THEME_VALUE;
-            localStorage.setItem(THEME_KEY, newTheme);
+            // NO_TRANSITION_CLASS должен быть уже удален к этому моменту
+            // через postLoadSetup. Нет необходимости удалять его здесь снова.
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const newTheme = (currentTheme === DARK_THEME_VALUE) ? LIGHT_THEME_VALUE : DARK_THEME_VALUE;
             applyTheme(newTheme);
         });
     }
 
-    // --- Удаление класса no-transition после загрузки ---
-    // Этот обработчик гарантирует, что анимации будут включены для последующих переключений темы.
-    window.addEventListener('DOMContentLoaded', () => {
-        // Небольшая задержка, чтобы убедиться, что все начальные стили применились без анимации
-        setTimeout(() => {
+    // Логика, выполняемая после того, как DOM готов и начальная тема (из inline-скрипта) применена
+    function postLoadSetup() {
+        if (postLoadLogicExecuted) return; // Выполняем только один раз
+
+        initializeUIFromExistingTheme(); // Обновляем иконку/aria-label на основе темы, установленной inline-скриптом
+
+        // Удаляем класс для отключения анимаций после того, как начальная тема применена
+        // и браузер имел шанс отрисовать страницу.
+        requestAnimationFrame(() => {
             if (htmlElement.classList.contains(NO_TRANSITION_CLASS)) {
                 htmlElement.classList.remove(NO_TRANSITION_CLASS);
             }
-        }, 0);
-    });
+        });
+        postLoadLogicExecuted = true;
+    }
+
+    // Запуск пост-загрузочной логики
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', postLoadSetup);
+    } else {
+        // DOM уже загружен (например, скрипт без defer или async, или подключен в конце body)
+        postLoadSetup();
+    }
 
 })();

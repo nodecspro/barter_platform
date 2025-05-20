@@ -1,167 +1,306 @@
+/* ==========================================================================
+   Base Theme Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Layout & Transition Variables
+   -------------------------------------------------------------------------- */
 :root {
-    --body-bg: #f8f9fa;
-    --body-color: #212529;
-    --card-bg: #fff;
-    --card-border-color: rgba(0, 0, 0, 0.175);
-    --list-group-bg: #fff;
-    --list-group-border-color: rgba(0, 0, 0, 0.125);
-    --form-control-bg: #fff;
-    --form-control-color: #212529;
-    --form-control-border-color: #ced4da;
-    --form-floating-label-color: #6c757d;
-    --text-muted-color: #6c757d;
-    --link-color: #0d6efd;
-    --link-hover-color: #0a58ca;
-    --alert-danger-bg: #f8d7da;
-    --alert-danger-color: #842029;
-    --alert-danger-border-color: #f5c2c7;
-    --footer-bg: #e9ecef;
-    --footer-color: #6c757d;
-    --container-box-bg: #fff;
+    --navbar-height: 56px;
+    --footer-height: 60px;
+    --theme-transition-duration: 0.2s;
+    --theme-transition-timing: ease-in-out;
+
+    /* Source colors for Light Theme (User Defined) */
+    --source-body-bg-light: #f8f9fa;
+    --source-body-color-light: #212529;
+    --source-card-border-color-light: rgba(0, 0, 0, 0.175);
+    /* Use as --bs-border-color */
+    --source-list-group-border-color-light: rgba(0, 0, 0, 0.125);
+    /* Use as --bs-list-group-border-color */
+    --source-form-control-border-color-light: #ced4da;
+    /* Use as --bs-border-color-translucent or specific form var */
+    --source-text-muted-color-light: #6c757d;
+    /* Use for --bs-body-secondary-color */
+    --source-link-color-light-rgb: 13, 110, 253;
+    /* #0d6efd */
+    --source-link-hover-color-light-rgb: 10, 88, 202;
+    /* #0a58ca */
+    --source-alert-danger-bg-light: #f8d7da;
+    --source-alert-danger-color-light: #842029;
+    --source-alert-danger-border-color-light: #f5c2c7;
+    --source-footer-bg-light: #e9ecef;
+    --source-footer-color-light: #6c757d;
+    --source-container-box-bg-light: #fff;
+    --source-navbar-bg-light: #f8f9fa;
+    /* Example, if different from body-bg */
+    --source-navbar-color-light: rgba(0, 0, 0, .55);
+
+    /* Source colors for Dark Theme (User Defined) */
+    --source-body-bg-dark: #212529;
+    --source-body-color-dark: #dee2e6;
+    --source-card-border-color-dark: #495057;
+    /* Use as --bs-border-color */
+    --source-list-group-border-color-dark: #495057;
+    /* Use as --bs-list-group-border-color */
+    --source-form-control-bg-dark: #343a40;
+    --source-form-control-border-color-dark: #495057;
+    --source-text-muted-color-dark: #adb5bd;
+    /* Use for --bs-body-secondary-color */
+    --source-link-color-dark-rgb: 138, 180, 248;
+    /* #8ab4f8 */
+    --source-link-hover-color-dark-rgb: 167, 197, 249;
+    /* #a7c5f9 */
+    --source-alert-danger-bg-dark: #49292d;
+    --source-alert-danger-color-dark: #f8d7da;
+    --source-alert-danger-border-color-dark: #5e3034;
+    --source-footer-bg-dark: #1c1f23;
+    --source-footer-color-dark: #adb5bd;
+    --source-container-box-bg-dark: #272b30;
+    --source-navbar-bg-dark: #212529;
+    /* Example */
+    --source-navbar-color-dark: rgba(255, 255, 255, .55);
+
+    /* --------------------------------------------------------------------------
+       Bootstrap CSS Variables Override - LIGHT THEME (Defaults)
+       -------------------------------------------------------------------------- */
+    --bs-body-bg: var(--source-body-bg-light);
+    --bs-body-color: var(--source-body-color-light);
+    --bs-body-color-rgb: 33, 37, 41;
+    /* for #212529 */
+    --bs-emphasis-color: var(--source-body-color-light);
+    --bs-emphasis-color-rgb: var(--bs-body-color-rgb);
+    --bs-secondary-color: var(--source-text-muted-color-light);
+    /* For .text-secondary */
+    --bs-secondary-color-rgb: 108, 117, 125;
+    /* for #6c757d */
+    --bs-body-secondary-color: var(--source-text-muted-color-light);
+    /* For .text-body-secondary, .text-muted */
+    --bs-body-secondary-color-rgb: var(--bs-secondary-color-rgb);
+
+    --bs-border-color: var(--source-card-border-color-light);
+    /* General border color */
+    --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
+    /* For components like form-control, modal-header if needed */
+
+    --bs-link-color-rgb: var(--source-link-color-light-rgb);
+    --bs-link-hover-color-rgb: var(--source-link-hover-color-light-rgb);
+
+    /* Components */
+    --bs-card-bg: #fff;
+    /* Typically white in light theme */
+    --bs-card-border-color: var(--bs-border-color);
+    --bs-list-group-bg: #fff;
+    --bs-list-group-border-color: var(--source-list-group-border-color-light);
+
+    /* Forms */
+    --bs-form-control-bg: #fff;
+    --bs-form-control-color: var(--bs-body-color);
+    --bs-form-control-border-color: var(--source-form-control-border-color-light);
+    --bs-form-select-indicator-color: var(--bs-body-color);
+    --bs-form-select-indicator: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='#{encodecolor(var(--bs-form-select-indicator-color))}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    /* Note: encodecolor() is a SASS function, direct CSS needs the color hardcoded or a more complex SVG.
+       Bootstrap 5.3 usually handles this automatically by recompiling the SVG with current color vars.
+       If not, you might need to explicitly set --bs-form-select-bg-img for dark theme if default is not good. */
+
+    /* Alerts (using Bootstrap's "subtle" variants for theming) */
+    --bs-danger-bg-subtle: var(--source-alert-danger-bg-light);
+    --bs-danger-text: var(--source-alert-danger-color-light);
+    --bs-danger-border-subtle: var(--source-alert-danger-border-color-light);
+
+    /* Navbar (if it follows body theme) */
+    --bs-navbar-color: var(--source-navbar-color-light);
+    --bs-navbar-hover-color: rgba(0, 0, 0, .7);
+    --bs-navbar-active-color: rgba(0, 0, 0, .9);
+    --bs-navbar-brand-color: rgba(0, 0, 0, .9);
+    --bs-navbar-brand-hover-color: rgba(0, 0, 0, .9);
+    --bs-navbar-toggler-border-color: rgba(0, 0, 0, .1);
+    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    --bs-navbar-bg: var(--source-navbar-bg-light);
+    /* Use if you want a specific Navbar BG */
+    /* If null or not set, Navbar uses --bs-tertiary-bg or body context */
+
+    /* Custom Variables (default to light) */
+    --custom-footer-bg: var(--source-footer-bg-light);
+    --custom-footer-color: var(--source-footer-color-light);
+    --custom-container-box-bg: var(--source-container-box-bg-light);
 }
 
+/* --------------------------------------------------------------------------
+   Bootstrap CSS Variables Override - DARK THEME
+   -------------------------------------------------------------------------- */
 [data-bs-theme="dark"] {
-    --body-bg: #212529;
-    --body-color: #dee2e6;
-    --card-bg: #2b3035;
-    --card-border-color: #495057;
-    --list-group-bg: #2b3035;
-    --list-group-border-color: #495057;
-    --form-control-bg: #343a40;
-    --form-control-color: #dee2e6;
-    --form-control-border-color: #495057;
-    --form-floating-label-color: #adb5bd;
-    --text-muted-color: #8d969e;
-    --link-color: #8ab4f8;
-    --link-hover-color: #a7c5f9;
-    --alert-danger-bg: #49292d;
-    --alert-danger-color: #f8d7da;
-    --alert-danger-border-color: #5e3034;
-    --footer-bg: #1c1f23;
-    --footer-color: #adb5bd;
-    --container-box-bg: #272b30;
+    --bs-body-bg: var(--source-body-bg-dark);
+    --bs-body-color: var(--source-body-color-dark);
+    --bs-body-color-rgb: 222, 226, 230;
+    /* for #dee2e6 */
+    --bs-emphasis-color: var(--source-body-color-dark);
+    --bs-emphasis-color-rgb: var(--bs-body-color-rgb);
+    --bs-secondary-color: var(--source-text-muted-color-dark);
+    --bs-secondary-color-rgb: 173, 181, 189;
+    /* for #adb5bd */
+    --bs-body-secondary-color: var(--source-text-muted-color-dark);
+    --bs-body-secondary-color-rgb: var(--bs-secondary-color-rgb);
+
+    --bs-border-color: var(--source-card-border-color-dark);
+    --bs-border-color-translucent: rgba(255, 255, 255, 0.15);
+
+    --bs-link-color-rgb: var(--source-link-color-dark-rgb);
+    --bs-link-hover-color-rgb: var(--source-link-hover-color-dark-rgb);
+
+    /* Components */
+    --bs-card-bg: #2b3035;
+    --bs-card-border-color: var(--bs-border-color);
+    --bs-list-group-bg: #2b3035;
+    --bs-list-group-border-color: var(--source-list-group-border-color-dark);
+
+    /* Forms */
+    --bs-form-control-bg: var(--source-form-control-bg-dark);
+    --bs-form-control-color: var(--bs-body-color);
+    --bs-form-control-border-color: var(--source-form-control-border-color-dark);
+    --bs-form-select-indicator-color: var(--bs-body-color);
+    /* Explicitly set form select arrow for dark theme if needed, as per original user CSS intention */
+    --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='#{encodecolor(var(--bs-body-secondary-color))}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    /* If you want the arrow to use --bs-body-secondary-color (#adb5bd) for dark theme.
+       Note: Bootstrap's default uses its --bs-body-color for the arrow. */
+
+
+    /* Alerts */
+    --bs-danger-bg-subtle: var(--source-alert-danger-bg-dark);
+    --bs-danger-text: var(--source-alert-danger-color-dark);
+    --bs-danger-border-subtle: var(--source-alert-danger-border-color-dark);
+
+    /* Navbar (if it follows body theme) */
+    --bs-navbar-color: var(--source-navbar-color-dark);
+    --bs-navbar-hover-color: rgba(255, 255, 255, .75);
+    --bs-navbar-active-color: #fff;
+    --bs-navbar-brand-color: #fff;
+    --bs-navbar-brand-hover-color: #fff;
+    --bs-navbar-toggler-border-color: rgba(255, 255, 255, .1);
+    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    --bs-navbar-bg: var(--source-navbar-bg-dark);
+
+    /* Custom Variables for Dark Theme */
+    --custom-footer-bg: var(--source-footer-bg-dark);
+    --custom-footer-color: var(--source-footer-color-dark);
+    --custom-container-box-bg: var(--source-container-box-bg-dark);
 }
 
-body {
-    padding-top: 5rem;
-    padding-bottom: 60px;
-    background-color: var(--body-bg);
-    color: var(--body-color);
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-html.no-theme-transition-on-load body,
-html.no-theme-transition-on-load .card,
-html.no-theme-transition-on-load .list-group-item,
-html.no-theme-transition-on-load .form-control,
-html.no-theme-transition-on-load .signup-container,
-html.no-theme-transition-on-load .login-container,
-html.no-theme-transition-on-load .ad-form-container,
-/* Добавим для формы объявления */
-html.no-theme-transition-on-load .footer {
+/* --------------------------------------------------------------------------
+   No Transition on Load
+   -------------------------------------------------------------------------- */
+html.no-theme-transition-on-load *,
+html.no-theme-transition-on-load *::before,
+html.no-theme-transition-on-load *::after {
     transition: none !important;
 }
 
-.card {
-    background-color: var(--card-bg);
-    border-color: var(--card-border-color);
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+/* --------------------------------------------------------------------------
+   Global Resets & Base Styles
+   -------------------------------------------------------------------------- */
+body {
+    padding-top: var(--navbar-height);
+    padding-bottom: var(--footer-height);
+    /* background-color and color are handled by Bootstrap using --bs-body-bg and --bs-body-color */
+    transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+        color var(--theme-transition-duration) var(--theme-transition-timing);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.list-group-item {
-    background-color: var(--list-group-bg);
-    border-color: var(--list-group-border-color);
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-}
-
-.form-control {
-    background-color: var(--form-control-bg);
-    color: var(--form-control-color);
-    border-color: var(--form-control-border-color);
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-}
-
-.form-control:focus {
-    border-color: #86b7fe;
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    background-color: var(--form-control-bg);
-    color: var(--form-control-color);
-}
-
-.form-select {
-    /* Добавим стили и для form-select, если они нужны для темы */
-    background-color: var(--form-control-bg);
-    color: var(--form-control-color);
-    border-color: var(--form-control-border-color);
-    /* Bootstrap иконка для select может потребовать дополнительной стилизации для темной темы */
-}
-
-[data-bs-theme="dark"] .form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23adb5bd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-
-.form-floating>label {
-    color: var(--form-floating-label-color);
-}
-
-.form-floating>.form-control:focus~label,
-.form-floating>.form-control:not(:placeholder-shown)~label,
-.form-floating>.form-select~label {
-    /* Добавил .form-select сюда */
-    color: var(--form-floating-label-color);
-    opacity: 0.65;
-}
-
-.text-muted {
-    color: var(--text-muted-color) !important;
+main.container {
+    flex-grow: 1;
 }
 
 a {
-    color: var(--link-color);
+    /* color and text-decoration are handled by Bootstrap using --bs-link-color-rgb etc. */
+    /* Bootstrap already adds transition for color on links when data-bs-theme changes */
 }
 
 a:hover {
-    color: var(--link-hover-color);
+    /* text-decoration: underline; /* Bootstrap default is none, or based on utility classes */
 }
 
-.alert-danger {
-    background-color: var(--alert-danger-bg);
-    color: var(--alert-danger-color);
-    border-color: var(--alert-danger-border-color);
+/* If you need to ensure text-muted uses your theme variable and override specificity */
+.text-muted {
+    color: var(--bs-body-secondary-color) !important;
 }
 
-.footer {
-    padding: 1rem 0;
-    background-color: var(--footer-bg);
-    color: var(--footer-color);
-    text-align: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    font-size: 0.9em;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+/* --------------------------------------------------------------------------
+   Components (Minimal overrides if Bootstrap variables are set correctly)
+   -------------------------------------------------------------------------- */
+
+/* .card, .list-group-item, .form-control, .form-select, .alert
+   should now primarily use Bootstrap's variables.
+   Add transitions here if Bootstrap's default theming transitions are insufficient.
+   Bootstrap 5.3 is quite good at this.
+*/
+
+/* Example: ensure form floating label color respects theme if Bootstrap doesn't fully cover it */
+.form-floating>label {
+    color: var(--bs-body-secondary-color);
 }
 
-.container {
-    max-width: 1140px;
-}
+/* .form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label,
+.form-floating>.form-select~label {
+    opacity: 0.65; Bootstrap default
+    color: var(--bs-body-secondary-color);
+} */
 
-/* Общие стили для контейнеров форм, если они одинаковы */
+
+/* --------------------------------------------------------------------------
+   Layout Specific (Your Custom Components)
+   -------------------------------------------------------------------------- */
 .signup-container,
 .login-container,
 .ad-form-container {
     max-width: 550px;
-    /* Общая ширина для форм */
     margin-top: 2rem;
     margin-bottom: 3rem;
     padding: 2rem;
-    background-color: var(--container-box-bg);
+    background-color: var(--custom-container-box-bg);
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+        box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+[data-bs-theme="dark"] .signup-container,
+[data-bs-theme="dark"] .login-container,
+[data-bs-theme="dark"] .ad-form-container {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    /* Darker shadow for dark theme */
 }
 
 .ad-form-container {
     max-width: 700px;
+}
+
+.footer {
+    padding: 1rem 0;
+    background-color: var(--custom-footer-bg);
+    color: var(--custom-footer-color);
+    text-align: center;
+    font-size: 0.9em;
+    width: 100%;
+    transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+        color var(--theme-transition-duration) var(--theme-transition-timing);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+}
+
+/* Ensure Bootstrap Icons are not affected by general link color if they are inside <a> tags
+   but should retain their own color (e.g., in theme switcher button) */
+.btn .bi,
+.dropdown-item .bi
+
+/* Add other contexts if needed */
+    {
+    color: inherit;
+    /* Or a specific color if they should not inherit button/item text color */
 }
