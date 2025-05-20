@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 {% block title %}
   {{ ad.title }} - Бартер Онлайн
@@ -35,6 +35,8 @@
                  class="ad-detail-image"
                  alt="{{ ad.title }}"
                  id="adMainImage"
+                 height="auto"
+                 width="100%"
                  onerror="handleImageError(this, 'adImageErrorPlaceholder')" />
             <div id="adImageErrorPlaceholder"
                  class="ad-detail-no-image initially-hidden">

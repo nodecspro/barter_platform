@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 {% load app_tags %}
-{% block title %}Все объявления - Бартер Онлайн{% endblock %}
+{% block title %}
+    Все объявления - Бартер Онлайн
+{% endblock title %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'ads/css/ad_list_page.css' %}">
-{% endblock %}
+{% endblock extra_head %}
 {% block content %}
     <div class="container mt-4">
         <h1 class="mb-4">Все объявления</h1>
@@ -73,27 +75,23 @@
                                             alt="{{ ad.title }}"
                                             id="adImage_{{ ad.pk }}" {# Уникальный ID для каждого изображения #}
                                             onerror="this.style.display='none'; document.getElementById('adPlaceholder_{{ ad.pk }}').style.display='flex';"
-                                            loading="lazy">
+                                            loading="lazy"
+                                            width="300"
+                                            height="200">
                                             {# Ленивая загрузка изображений #}
                                             <div id="adPlaceholder_{{ ad.pk }}"
                                                  class="card-img-top d-flex align-items-center justify-content-center ad-list-card-placeholder"
-                                                 style="display: none;
-                                                        flex-direction: column;
-                                                        text-align: center"
+                                                 class="ad-placeholder-hidden ad-placeholder-content"
                                                  role="img"
                                                  aria-label="Ошибка загрузки изображения">
-                                                <i class="bi bi-exclamation-triangle-fill"
-                                                   style="font-size: 2.5rem;
-                                                          color: var(--bs-warning)"></i>
+                                                <i class="bi bi-exclamation-triangle-fill ad-placeholder-icon"></i>
                                                 <span class="mt-1 small text-muted">Ошибка</span> {# Короткое сообщение #}
                                             </div>
                                         {% else %}
-                                            <div class="card-img-top d-flex align-items-center justify-content-center"
+                                            <div class="card-img-top d-flex align-items-center justify-content-center no-image-placeholder"
                                                  role="img"
                                                  aria-label="Нет изображения">
-                                                <i class="bi bi-image-alt"
-                                                   style="font-size: 4rem;
-                                                          color: var(--bs-secondary-color)"></i>
+                                                <i class="bi bi-image-alt"></i>
                                             </div>
                                         {% endif %}
                                     </div>
@@ -178,9 +176,7 @@
                 {% endif %}
             {% else %}
                 <div class="text-center py-5">
-                    <i class="bi bi- binoculars"
-                       style="font-size: 4rem;
-                              color: var(--bs-secondary-color)"></i> {# Иконка бинокля #}
+                    <i class="bi bi- binoculars no-ads-icon"></i> {# Иконка бинокля #}
                     <h3 class="mt-3">Объявлений не найдено</h3>
                     <p class="text-muted">
                         Попробуйте изменить параметры поиска или <a href="{% url 'ads:ad_list' %}">сбросить фильтры</a>.
@@ -191,4 +187,4 @@
                 </div>
             {% endif %}
         </div>
-    {% endblock %}
+    {% endblock content %}
