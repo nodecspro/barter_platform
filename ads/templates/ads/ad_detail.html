@@ -78,22 +78,4 @@
 {% endblock content %}
 {% block extra_scripts %}
   <script src="{% static 'ads/js/ad_detail_interactive.js' %}"></script>
-  <script>
-    // Убедитесь, что функция handleImageError(imageElement, placeholderId)
-    // определена в вашем файле ad_detail_interactive.js:
-    /*
-    function handleImageError(imageElement, placeholderId) {
-      if (imageElement) {
-        imageElement.style.display = 'none';
-      }
-      const placeholder = document.getElementById(placeholderId);
-      if (placeholder) {
-        placeholder.classList.remove('initially-hidden');
-        // Убедитесь, что CSS для .ad-detail-no-image имеет display: flex !important;
-        // или явно задайте здесь, если initially-hidden перебивает display: flex
-        // placeholder.style.display = 'flex';
-      }
-    }
-    */
-  </script>
 {% endblock extra_scripts %}
