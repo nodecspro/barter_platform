@@ -159,30 +159,43 @@
 /* --- Описание товара --- */
 .ad-description-section {
     margin-top: 2rem;
+    /* Отступ сверху для всей секции описания */
     padding-top: 1.5rem;
+    /* Отступ над заголовком "Описание товара" */
     border-top: 1px solid var(--bs-border-color);
+    /* Разделительная линия сверху */
 }
 
 .ad-description-section h4 {
+    /* Заголовок "Описание товара:" */
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
+    /* Отступ под заголовком */
+    font-size: 1.25rem;
+    /* Размер заголовка секции */
 }
 
 .ad-description-section h4 i {
+    /* Иконка рядом с заголовком */
     margin-right: 0.5rem;
     color: var(--bs-info);
+    /* Или другой подходящий цвет Bootstrap */
     font-size: 1.2em;
+    /* Относительно h4 */
 }
 
 .ad-description-content {
-    white-space: pre-wrap;
     line-height: 1.7;
+    /* Улучшает читаемость длинного текста */
     color: var(--bs-body-color);
+    /* Цвет текста из темы Bootstrap */
     background-color: var(--bs-tertiary-bg);
-    padding: 1rem 1.5rem;
-    border-radius: var(--bs-border-radius);
-    min-height: 80px;
+    /* Фон для блока описания, чтобы он выделялся */
+    padding: 1.25rem 1.5rem;
+    /* Внутренние отступы: 1.25rem сверху/снизу, 1.5rem слева/справа */
+    border-radius: var(--bs-border-radius-lg);
+    /* Скругление углов, можно var(--bs-border-radius) для стандартного */
 }
 
 /* --- Форма предложения --- */
