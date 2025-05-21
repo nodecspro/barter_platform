@@ -47,14 +47,13 @@
                 </p>
                 {% if proposal.comment %}
                   <div class="comment-block">
-                    {# Изменили p на div с классом #}
                     <i class="bi bi-chat-left-text me-1"></i>{{ proposal.comment }}
                   </div>
                 {% endif %}
               </div>
               <div class="card-footer bg-transparent border-top-0 text-muted small d-flex justify-content-between align-items-center">
                 <span>Отправлено: {{ proposal.created_at|date:'d.m.Y H:i' }}</span>
-                {% if proposal.status == 'pending' %}{# <a href="#" class="btn btn-sm btn-outline-danger">Отменить</a> #}{% endif %}
+                {% if proposal.status == 'pending' %}{% endif %}
               </div>
             </div>
           {% endfor %}
@@ -99,7 +98,6 @@
                 </p>
                 {% if proposal.comment %}
                   <div class="comment-block">
-                    {# Изменили p на div с классом #}
                     <i class="bi bi-chat-left-text me-1"></i>{{ proposal.comment }}
                   </div>
                 {% endif %}

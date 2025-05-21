@@ -1,73 +1,70 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-
 {% block title %}
-  {{ form_title|default:'Форма объявления' }}
-{% endblock %}
-
+  {{ form_title|default:"Создание объявления" }} - Бартер Онлайн
+{% endblock title %}
 {% block extra_head %}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="{% static 'ads/css/ad_form_page.css' %}" />
-{% endblock %}
-
+{% endblock extra_head %}
 {% block content %}
-  <div class="container ad-form-container">
-    <h1>{{ form_title|default:'Создать/Редактировать объявление' }}</h1>
-
+  <div class="container ad-form-container my-4 my-md-5">
+    <h1 class="text-center mb-4">{{ form_title|default:"Новое объявление" }}</h1>
     {% if form.non_field_errors %}
-      <div class="alert alert-danger mt-3" role="alert">
-        {% for error in form.non_field_errors %}
-          <p class="mb-0">{{ error }}</p>
-        {% endfor %}
+      <div class="alert alert-danger mt-3 py-2"
+           role="alert"
+           aria-live="assertive">
+        {% for error in form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}
       </div>
     {% endif %}
-
-    <form method="post" enctype="multipart/form-data" id="adForm" class="mt-3" novalidate>
+    <form method="post"
+          enctype="multipart/form-data"
+          id="adForm"
+          class="mt-3 needs-validation"
+          novalidate>
       {% csrf_token %}
-
       {% for field in form %}
         <div class="mb-3 field-wrapper">
-          <div class="form-floating field-container-{{ field.name }}" data-field-name="{{ field.name }}">
+          <div class="form-floating field-container-{{ field.name }}"
+               data-field-name="{{ field.name }}">
             {{ field }}
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+              {% if field.field.required %}
+                {% if field.name != 'category' %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+                <span class="visually-hidden">(обязательное поле)</span>
+              {% endif %}
+            </label>
             {% if field.errors %}
               <div class="invalid-feedback d-block django-error">
-                {% for error in field.errors %}
-                  {{ error }}
-                {% endfor %}
+                {% for error in field.errors %}{{ error }}{% endfor %}
               </div>
             {% endif %}
-            <div class="custom-error-message" id="{{ field.id_for_label }}-js-error"></div>
+            <div class="custom-error-message text-danger small mt-1"
+                 id="{{ field.id_for_label }}-js-error"></div>
           </div>
-
           {% if field.help_text %}
-            <div class="form-field-help form-text">{{ field.help_text|safe }}</div>
+            <div class="form-field-help form-text text-muted small mt-1"
+                 id="{{ field.id_for_label }}_helptext">{{ field.help_text|safe }}</div>
           {% endif %}
         </div>
       {% endfor %}
-
-      <div class="d-grid gap-2 mt-4">
+      {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}" />{% endif %}
+      <div class="d-grid gap-3 mt-4 pt-2">
         <button type="submit" class="btn btn-primary btn-lg">
           {% if object %}
-            Сохранить изменения
+            <i class="bi bi-save-fill me-2"></i>Сохранить изменения
           {% else %}
-            Опубликовать объявление
+            <i class="bi bi-check-circle-fill me-2"></i>Опубликовать объявление
           {% endif %}
         </button>
-        <a href="{% if object %}
-            {{ object.get_absolute_url }}
-          {% else %}
-            {% url 'ads:ad_list' %}
-          {% endif %}"
-          class="btn btn-outline-secondary">
-          Отмена
+        <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'ads:ad_list' %}{% endif %}"
+           class="btn btn-outline-secondary btn-lg">
+          <i class="bi bi-x-circle me-2"></i>Отмена
         </a>
       </div>
     </form>
   </div>
-{% endblock %}
-
+{% endblock content %}
 {% block extra_scripts %}
-  <script src="{% static 'ads/js/ad_form_validation.js' %}"></script>
-{% endblock %}
+  <script src="{% static 'ads/js/ad_form_validation.js' %}" defer></script>
+{% endblock extra_scripts %}

@@ -10,7 +10,6 @@
   <div class="container mt-4 mb-5">
     <div class="row g-lg-5 g-md-4 g-3">
       {% if ad.image_url %}
-        {# --- Вариант С ИЗОБРАЖЕНИЕМ --- #}
         <div class="col-lg-7">
           <div class="ad-image-container shadow-sm has-image">
             <img src="{{ ad.image_url }}"
@@ -31,7 +30,6 @@
           {% include "ads/includes/ad_info_panel.html" with ad=ad user=user proposal_form=proposal_form existing_proposals=existing_proposals %}
         </div>
       {% else %}
-        {# --- Вариант БЕЗ ИЗОБРАЖЕНИЯ --- #}
         <div class="col-lg-4 col-md-5 d-flex align-items-center justify-content-center">
           <div class="ad-image-container shadow-sm no-image-default w-100">
             <div class="ad-detail-no-image" id="adImageDefaultPlaceholder">
@@ -45,7 +43,6 @@
         </div>
       {% endif %}
     </div>
-    {# Секция описания товара #}
     <div class="row mt-4">
       <div class="col-12 ad-description-section">
         <h4 class="mb-3">

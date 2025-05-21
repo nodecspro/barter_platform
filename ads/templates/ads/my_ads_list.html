@@ -57,7 +57,6 @@
                   <span class="badge rounded-pill text-bg-light">{{ ad.get_condition_display }}</span>
                 </p>
                 <p class="card-text small flex-grow-1">{{ ad.description|truncatewords:15 }}</p>
-                {# Уменьшил кол-во слов для краткости #}
                 {% if not ad.is_active %}
                   <p class="text-warning small mt-auto mb-2">
                     <span class="badge bg-warning text-dark ad-status-badge">Объявление неактивно</span>
@@ -67,7 +66,6 @@
               <div class="card-footer bg-transparent border-top-0 actions-footer pb-3">
                 <small class="text-muted d-block mb-2">Опубликовано: {{ ad.created_at|date:'d M Y, H:i' }}</small>
                 <div class="d-flex justify-content-start flex-wrap">
-                  {# flex-wrap для кнопок #}
                   <a href="{{ ad.get_absolute_url }}"
                      class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>Просмотр</a>
                   <a href="{% url 'ads:ad_edit' ad.pk %}"
@@ -84,7 +82,7 @@
         <nav aria-label="Page navigation"
              class="mt-5 d-flex justify-content-center">
           <ul class="pagination">
-            {% get_current_page_params request as current_params %} {# Используем кастомный тег #}
+            {% get_current_page_params request as current_params %}
             {% if page_obj.has_previous %}
               <li class="page-item">
                 <a class="page-link" href="?page=1{{ current_params }}">« <span class="d-none d-sm-inline">Первая</span></a>

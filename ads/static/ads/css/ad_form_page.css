@@ -1,35 +1,176 @@
 .ad-form-container {
     max-width: 700px;
-    margin-top: 2rem;
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background-color: var(--container-box-bg);
-    border-radius: 0.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    margin: 3rem auto;
+    padding: 2.5rem 3rem;
+    background-color: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius-lg);
+    border: 1px solid var(--bs-border-color-translucent);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.ad-form-container:hover {
+    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.18);
 }
 
 .ad-form-container h1 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.25rem;
     text-align: center;
+    font-weight: 400;
+    font-size: 1.85rem;
+    color: var(--bs-primary);
+    position: relative;
+    padding-bottom: 0.75rem;
 }
 
-/* Стили для form-floating */
+.ad-form-container h1::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: var(--bs-primary);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+/* Main form field wrapper */
+.field-wrapper {
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.field-wrapper:focus-within {
+    transform: translateY(-2px);
+}
+
+/* Help text and error message styling */
+.field-wrapper .form-text,
+.field-wrapper .django-error.invalid-feedback,
+.field-wrapper .custom-error-message {
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+    padding-left: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.field-wrapper .form-text {
+    color: var(--bs-secondary-color);
+    opacity: 0.85;
+}
+
+.field-wrapper:hover .form-text {
+    opacity: 1;
+}
+
+.field-wrapper .django-error.invalid-feedback,
+.field-wrapper .custom-error-message {
+    color: var(--bs-danger);
+    font-weight: 500;
+}
+
+.field-wrapper .django-error.invalid-feedback ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.field-wrapper .custom-error-message {
+    display: none;
+    transform: translateY(-5px);
+}
+
+.field-wrapper .custom-error-message.is-visible {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Button styling with hover effects */
+.btn {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    box-shadow: 0 4px 8px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 12px rgba(var(--bs-primary-rgb), 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+    .ad-form-container {
+        padding: 1.5rem 1.25rem;
+        margin: 1.5rem auto;
+    }
+
+    .ad-form-container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Form control focus states */
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+}
+
+/* Floating label animations */
+.form-floating label {
+    transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label,
+.form-floating>.form-select~label {
+    opacity: 0.8;
+    transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+}
+
+.form-floating>.form-control:focus~label {
+    color: var(--bs-primary);
+    opacity: 1;
+}
+
+.form-floating>textarea.form-control.is-valid,
+.form-floating>textarea.form-control.is-invalid {
+    background-position: top 1.2rem right calc(0.375em + 0.1875rem);
+}
+
 .form-floating {
     position: relative;
 }
 
 .form-floating>.form-control,
 .form-floating>.form-select {
-    height: calc(3.5rem + 2px);
-    line-height: 1.25;
-    padding-top: 1.625rem;
-    padding-bottom: 0.625rem;
+    padding: 1.625rem 1rem 0.625rem 1rem;
+    height: auto;
+    min-height: calc(1.5em + 1.625rem + 0.625rem + 2px);
 }
 
 .form-floating>textarea.form-control {
-    min-height: calc(3.5rem + 2px);
-    /* Для textarea */
-    /* height: auto; /* или заданная через rows в forms.py */
+    min-height: 100px;
+}
+
+.form-floating>textarea.form-control::-webkit-scrollbar {
+    display: none;
 }
 
 .form-floating>label {
@@ -37,16 +178,11 @@
     top: 0;
     left: 0;
     height: 100%;
-    padding: 1rem 0.75rem;
+    padding: 1rem 1rem;
     pointer-events: none;
     border: 1px solid transparent;
     transform-origin: 0 0;
     transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-    color: var(--form-floating-label-color);
-}
-
-.form-floating>textarea.form-control~label {
-    height: auto;
 }
 
 .form-floating>.form-control:focus~label,
@@ -56,87 +192,13 @@
     transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 
-.form-control:focus {
-    border-color: #86b7fe;
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.form-floating>.form-control:placeholder-shown:not(:focus)::placeholder {
+    color: transparent;
 }
 
-/* Стили для Bootstrap is-valid / is-invalid с иконками */
-/* Стандартные (для полей без кнопки глаза) */
-.form-control.is-valid,
-.was-validated .form-control:valid {
-    border-color: #198754 !important;
-    padding-right: calc(1.5em + .75rem) !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4M3.7 6.73L1.3 4.53c-.4-1.04.46-1.4M7.4 1.23L4.1 5.83c-.4 1.04.46 1.4'%3e%3c/path%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right calc(.375em + .1875rem) center !important;
-    background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
-}
-
-.form-control.is-valid:focus {
-    box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25) !important;
-}
-
-.form-control.is-invalid,
-.was-validated .form-control:invalid {
-    border-color: #dc3545 !important;
-    padding-right: calc(1.5em + .75rem) !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right calc(.375em + .1875rem) center !important;
-    background-size: calc(.75em + .375rem) calc(.75em + .375rem) !important;
-}
-
-.form-control.is-invalid:focus {
-    box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25) !important;
-}
-
-/* Для полей select нет иконок is-valid/is-invalid по умолчанию в Bootstrap, но рамка будет */
-.form-select.is-valid,
-.was-validated .form-select:valid {
-    border-color: #198754 !important;
-}
-
-.form-select.is-valid:focus {
-    border-color: #198754 !important;
-    box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25) !important;
-}
-
-.form-select.is-invalid,
-.was-validated .form-select:invalid {
-    border-color: #dc3545 !important;
-}
-
-.form-select.is-invalid:focus {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25) !important;
-}
-
-/* Для help_text и ошибок Django */
-.form-field-help {
-    font-size: 0.875em;
-    margin-top: 0.25rem;
-    padding-left: 0.5rem;
-    color: var(--text-muted-color);
-}
-
-.django-error.invalid-feedback {
-    /* уже d-block */
-    font-size: 0.875em;
-    padding-left: 0.5rem;
-}
-
-.django-error.invalid-feedback ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.custom-error-message {
-    color: #dc3545;
-    font-size: 0.875em;
-    margin-top: 0.25rem;
-    display: none;
-    padding-left: 0.5rem;
+.form-floating>textarea.form-control.is-valid,
+.form-floating>textarea.form-control.is-invalid {
+    background-position: top 1.25rem right 0.75rem;
+    background-size: 1rem 1rem;
+    padding-right: 3.75rem;
 }

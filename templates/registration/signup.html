@@ -20,7 +20,6 @@
       {% csrf_token %}
       {% for field in form %}
         <div class="mb-3 field-wrapper">
-          {# Отступ между группами поле+подсказки #}
           <div class="form-floating field-container"
                data-field-name="{{ field.name }}">
             {{ field }}
@@ -50,7 +49,6 @@
             </div>
           {% endif %}
           {% if field.name == 'password' %}
-            {# Django UserCreationForm обычно использует 'password' для первого поля #}
             <div id="password-rules-container" class="field-validation-feedback">
               <p class="mb-1 small text-muted">Пароль должен:</p>
               <ul>
