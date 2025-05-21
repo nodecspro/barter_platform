@@ -77,3 +77,21 @@
         margin-top: 0.5rem;
     }
 }
+
+.hidden {
+    display: none;
+}
+
+.warning-icon {
+    font-size: 2.5rem;
+    color: var(--bs-warning);
+}
+
+.image-alt-icon {
+    font-size: 3rem;
+}
+
+.no-ads-icon {
+    font-size: 4rem;
+    color: var(--bs-secondary-color);
+}

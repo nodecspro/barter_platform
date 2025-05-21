@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="ru" data-bs-theme="light">
-  {# Начальная тема по умолчанию, будет перезаписана JS #}
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,7 +14,6 @@
       {% endblock title %}
     </title>
     <script>
-      // INLINE SCRIPT ДЛЯ ПРЕДОТВРАЩЕНИЯ FOUC ТЕМЫ (Flash of Unstyled Content)
       ;(function () {
         const THEME_KEY = 'theme';
         const DARK_THEME_VALUE = 'dark';
@@ -58,7 +56,6 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md fixed-top">
-      {# Убраны navbar-dark bg-dark #}
       <div class="container-fluid">
         <a class="navbar-brand" href="{% url "ads:ad_list" %}">Бартер Онлайн</a>
         <button class="navbar-toggler"
@@ -92,7 +89,6 @@
             {% endif %}
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
-            {# align-items-center для лучшего выравнивания кнопки темы #}
             {% if user.is_authenticated %}
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
@@ -147,10 +143,7 @@
                       class="btn btn-outline-secondary ms-2"
                       type="button"
                       aria-label="Переключить тему">
-                {# aria-label будет обновляться JS #}
-                <span id="theme-icon">
-                  {# Иконка будет вставлена JS, например: <i class="bi bi-sun-fill"></i> #}
-                </span>
+                <span id="theme-icon"></span>
               </button>
             </li>
           </ul>
