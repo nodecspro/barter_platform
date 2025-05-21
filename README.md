@@ -2,15 +2,10 @@
 
 [English](#english) | [Русский](#русский)
 
-<a name="english"></a>
-# English
-
-This is a web application for a barter platform built with Django.
-
 ## Table of Contents
 - [Barter Platform](#barter-platform)
-- [English](#english)
   - [Table of Contents](#table-of-contents)
+- [English](#english)
   - [Virtual Environment](#virtual-environment)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -18,13 +13,17 @@ This is a web application for a barter platform built with Django.
   - [Running the Project](#running-the-project)
   - [Running Tests](#running-tests)
 - [Русский](#русский)
-  - [Оглавление](#оглавление)
   - [Виртуальное окружение](#виртуальное-окружение)
   - [Необходимые условия](#необходимые-условия)
   - [Установка](#установка)
   - [Конфигурация](#конфигурация)
   - [Запуск проекта](#запуск-проекта)
   - [Запуск тестов](#запуск-тестов)
+
+<a name="english"></a>
+# English
+
+This is a web application for a barter platform built with Django.
 
 <a name="english-virtual-environment"></a>
 ## Virtual Environment
@@ -124,25 +123,6 @@ python manage.py test
 # Русский
 
 Это веб-приложение для платформы обмена, созданное с использованием Django.
-
-## Оглавление
-- [Barter Platform](#barter-platform)
-- [English](#english)
-  - [Table of Contents](#table-of-contents)
-  - [Virtual Environment](#virtual-environment)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Running the Project](#running-the-project)
-  - [Running Tests](#running-tests)
-- [Русский](#русский)
-  - [Оглавление](#оглавление)
-  - [Виртуальное окружение](#виртуальное-окружение)
-  - [Необходимые условия](#необходимые-условия)
-  - [Установка](#установка)
-  - [Конфигурация](#конфигурация)
-  - [Запуск проекта](#запуск-проекта)
-  - [Запуск тестов](#запуск-тестов)
 
 <a name="русский-виртуальное-окружение"></a>
 ## Виртуальное окружение
