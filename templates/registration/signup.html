@@ -25,7 +25,6 @@
                data-field-name="{{ field.name }}">
             {{ field }}
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {# Кнопка видимости пароля будет добавлена JS #}
             {% if field.errors %}
               <div class="invalid-feedback d-block django-error">
                 {% for error in field.errors %}{{ error }}{% endfor %}

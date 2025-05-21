@@ -15,18 +15,6 @@
       <h1 class="mb-2 mb-md-0">Мои объявления</h1>
       <a href="{% url 'ads:ad_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Создать новое</a>
     </div>
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags %} {{ message.tags }} {% else %} info {% endif %} alert-dismissible fade show"
-             role="alert">
-          {{ message }}
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
     {% if page_obj.object_list %}
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for ad in page_obj.object_list %}

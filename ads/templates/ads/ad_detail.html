@@ -8,29 +8,11 @@
 {% endblock extra_head %}
 {% block content %}
   <div class="container mt-4 mb-5">
-    {% comment %} Сообщения Django обычно находятся в base.html. Если они там, этот блок здесь не нужен. {% endcomment %}
-    {% if messages %}
-      <div class="row">
-        <div class="col-12">
-          {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mb-3"
-                 role="alert">
-              {{ message }}
-              <button type="button"
-                      class="btn-close"
-                      data-bs-dismiss="alert"
-                      aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
     <div class="row g-lg-5 g-md-4 g-3">
       {% if ad.image_url %}
         {# --- Вариант С ИЗОБРАЖЕНИЕМ --- #}
         <div class="col-lg-7">
           <div class="ad-image-container shadow-sm has-image">
-            {# <--- Добавлен класс .has-image #}
             <img src="{{ ad.image_url }}"
                  class="ad-detail-image"
                  alt="{{ ad.title }}"
@@ -52,7 +34,6 @@
         {# --- Вариант БЕЗ ИЗОБРАЖЕНИЯ --- #}
         <div class="col-lg-4 col-md-5 d-flex align-items-center justify-content-center">
           <div class="ad-image-container shadow-sm no-image-default w-100">
-            {# <--- Добавлен класс .no-image-default #}
             <div class="ad-detail-no-image" id="adImageDefaultPlaceholder">
               <i class="bi bi-image-alt"></i>
               <span>Изображение отсутствует</span>
