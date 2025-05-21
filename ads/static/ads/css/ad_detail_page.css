@@ -2,35 +2,44 @@
 .ad-image-container {
     position: relative;
     width: 100%;
-    background-color: var(--bs-tertiary-bg);
+    /* background-color уберем отсюда, он будет на плейсхолдерах или на body */
     border-radius: var(--bs-border-radius-lg);
-    overflow: hidden;
-    /* Важно для object-fit: cover и border-radius */
+    /* overflow: hidden; /* Может мешать, если изображение определяет высоту */
     display: flex;
-    /* Используем flex, чтобы плейсхолдер мог влиять на размеры, если он единственный контент */
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
+    /* Небольшой отступ вокруг изображения/плейсхолдера */
+    background-color: var(--bs-tertiary-bg);
+    /* Фон самого контейнера, будет виден если изображение меньше padding */
 }
 
 /* Стили для контейнера, когда изображения НЕТ (плейсхолдер по умолчанию) */
 .ad-image-container.no-image-default {
-    /* Позволяем плейсхолдеру определить высоту, но можно задать и здесь */
     min-height: 200px;
-    /* Минимальная высота для плейсхолдера "Изображение отсутствует" */
-    max-height: 300px;
-    /* Ограничение, чтобы не был слишком большим */
-    padding: 1rem;
-    /* Чтобы плейсхолдер не прилипал к краям */
+    max-height: 250px;
 }
+
 
 /* --- Изображение товара --- */
 .ad-detail-image {
     display: block;
-    width: 100%;
-    height: 100%;
-    /* Растягиваем на всю высоту контейнера (важно для object-fit: cover и aspect-ratio) */
-    object-fit: cover;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-out;
+    max-width: 100%;
+    max-height: 75vh;
+    /* Ограничиваем максимальную высоту изображения, чтобы не было слишком большим */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    /* Изображение будет видно целиком */
+    margin: auto;
+    /* Центрирует изображение */
+    transition: opacity 0.3s ease-in-out;
+    border-radius: var(--bs-border-radius-sm);
+    /* Небольшое скругление для самого изображения */
+}
+
+.ad-image-container.has-image {
+    min-height: 250px;
 }
 
 /* --- Плейсхолдер для изображения (если нет или ошибка загрузки) --- */
@@ -41,22 +50,25 @@
     justify-content: center;
     text-align: center;
     color: var(--bs-secondary-color);
-    padding: 1rem;
-    /* Уменьшил общий padding плейсхолдера, т.к. контейнер может его иметь */
+    /* padding: 1rem; Убрал, так как padding теперь на .ad-image-container */
     width: 100%;
-    /* Занимает ширину родителя (.ad-image-container) */
-    height: 100%;
-    /* Занимает высоту родителя, если он имеет размеры (например, через aspect-ratio или min-height) */
+    /* Занимает доступную ширину */
+    min-height: 150px;
+    /* Минимальная высота для содержимого плейсхолдера */
 }
 
 /* Стили для плейсхолдера при ОШИБКЕ загрузки (если он внутри .has-image контейнера) */
 .ad-image-container.has-image .ad-detail-no-image {
     position: absolute;
-    /* Накладывается поверх (скрытого) img */
+    /* Остается абсолютным, чтобы перекрыть "сломанный" img */
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
+    /* Заполнит родителя (.has-image), у которого есть min-height */
     background-color: var(--bs-tertiary-bg);
-    /* Чтобы перекрыть "сломанное" изображение */
+    border-radius: var(--bs-border-radius-lg);
+    /* Повторяем радиус контейнера */
 }
 
 .ad-detail-no-image i {
@@ -72,7 +84,6 @@
 /* Скрываем плейсхолдер ошибки изначально */
 .ad-image-container .initially-hidden {
     display: none !important;
-    /* !important, чтобы переопределить display:flex от .ad-detail-no-image */
 }
 
 
